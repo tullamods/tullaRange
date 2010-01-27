@@ -1,0 +1,7 @@
+## Interface: 30300
+## Title: tullaRange
+## Author: Tuller
+## Notes: Out of range coloring based on RedRange
+## Version: 1.6
+## SavedVariables: TULLARANGE_COLORS
+tullaRange.lua
