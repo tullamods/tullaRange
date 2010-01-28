@@ -116,7 +116,7 @@ end
 
 function tullaRange:UpdateButtonStatus(button)
 	local action = ActionButton_GetPagedID(button)
-	if not(button:IsVisible() and action and HasAction(action)) then
+	if not(button:IsVisible() and action and HasAction(action) and ActionHasRange(action)) then
 		self.buttonsToUpdate[button] = nil
 	else
 		self.buttonsToUpdate[button] = true
