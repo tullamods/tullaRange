@@ -7,4 +7,4 @@ cp -r tullaRange "${WOW_BETA_ADDON_DIR}"
 cp -r tullaRange_Config "${WOW_BETA_ADDON_DIR}"
 
 cp LICENSE "${WOW_BETA_ADDON_DIR}tullaRange"
-cp README  "${WOW_BETA_ADDON_DIR}tullaRange"
+cp README.textile  "${WOW_BETA_ADDON_DIR}tullaRange"
