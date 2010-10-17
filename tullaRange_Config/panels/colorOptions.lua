@@ -8,7 +8,7 @@ local ColorOptions = tullaRangeConfig.OptionsPanel:New('tullaRangeOptions_Colors
 tullaRangeConfig.ColorOptions = ColorOptions
 
 local SPACING = 4
-local COLOR_TYPES = {'oor', 'oom'}
+local COLOR_TYPES = {'oor', 'oom', 'ooh'}
 
 --[[
 	Startup

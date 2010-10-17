@@ -9,6 +9,7 @@
 local _G = _G
 local UPDATE_DELAY = 0.1
 local ATTACK_BUTTON_FLASH_TIME = ATTACK_BUTTON_FLASH_TIME
+local PLAYER_IS_PALADIN = false
 
 local ActionButton_GetPagedID = ActionButton_GetPagedID
 local ActionButton_IsFlashing = ActionButton_IsFlashing
@@ -16,6 +17,32 @@ local ActionHasRange = ActionHasRange
 local IsActionInRange = IsActionInRange
 local IsUsableAction = IsUsableAction
 local HasAction = HasAction
+
+local function removeDefaults(tbl, defaults)
+	for k, v in pairs(defaults) do
+		if type(tbl[k]) == 'table' and type(v) == 'table' then
+			removeDefaults(tbl[k], v)
+			if next(tbl[k]) == nil then
+				tbl[k] = nil
+			end
+		elseif tbl[k] == v then
+			tbl[k] = nil
+		end
+	end
+	return tbl
+end
+
+local function copyDefaults(tbl, defaults)
+	for k, v in pairs(defaults) do
+		if type(v) == 'table' then
+			tbl[k] = copyDefaults(tbl[k] or {}, v)
+		elseif tbl[k] == nil then
+			tbl[k] = v
+		end
+	end
+	return tbl
+end
+
 
 
 --[[ The main thing ]]--
@@ -29,6 +56,7 @@ function tullaRange:Load()
 	self.elapsed = 0
 
 	self:RegisterEvent('PLAYER_LOGIN')
+	self:RegisterEvent('PLAYER_LOGOUT')
 end
 
 
@@ -57,10 +85,19 @@ end
 --[[ Game Events ]]--
 
 function tullaRange:PLAYER_LOGIN()
+HOLY_POWER_SPELLS = {
+	[85256] = GetSpellInfo(85256),
+	[53385] = GetSpellInfo(53385),
+	[53600] = GetSpellInfo(53600),
+	[84963] = GetSpellInfo(84963)
+}
+
+PLAYER_IS_PALADIN = (select(2, UnitClass('player') == 'PALADIN'))
+
 	if not TULLARANGE_COLORS then
-		self:LoadDefaults()
+		TULLARANGE_COLORS = {}
 	end
-	self.colors = TULLARANGE_COLORS
+	self.colors = copyDefaults(TULLARANGE_COLORS, self:GetDefaults())
 
 	--add options loader
 	local f = CreateFrame('Frame', nil, InterfaceOptionsFrame)
@@ -74,6 +111,10 @@ function tullaRange:PLAYER_LOGIN()
 	hooksecurefunc('ActionButton_OnUpdate', self.RegisterButton)
 	hooksecurefunc('ActionButton_UpdateUsable', self.OnUpdateButtonUsable)
 	hooksecurefunc('ActionButton_Update', self.OnButtonUpdate)
+end
+
+function tullaRange:PLAYER_LOGOUT()
+	removeDefaults(TULLARANGE_COLORS, self:GetDefaults())
 end
 
 
@@ -156,6 +197,28 @@ end
 
 --[[ Range Coloring ]]--
 
+local function isHolyPowerAbility(actionId)
+	local actionType, id = GetActioninfo(actionId)
+	if acitonType == 'macro' then
+		local macroSpell = GetMacroSpell(id)
+		if macroSpell then
+			for spellId, spellName in pairs(HOLY_POWER_SPELLS) do
+				if macroSpell == spellName then
+					return true
+				end
+			end
+		end
+	else
+		for spellId, spellName in pairs(HOLY_POWER_SPELLS) do
+			if id == spellId then
+				return true
+			end
+		end
+	end
+	
+	return false
+end
+
 function tullaRange.UpdateButtonUsable(button)
 	local action = ActionButton_GetPagedID(button)
 	local isUsable, notEnoughMana = IsUsableAction(action)
@@ -165,6 +228,9 @@ function tullaRange.UpdateButtonUsable(button)
 		--but out of range
 		if IsActionInRange(action) == 0 then
 			tullaRange.SetButtonColor(button, 'oor')
+		--a holy power abilty, and we're less than 3 Holy Power
+		elseif PLAYER_IS_PALADIN and isHolyPowerAbility(action) and not(UnitPower('player', SPELL_POWER_HOLY_POWER) == 3 or UnitBuff('player', 'Hand of Light')) then
+			tullaRange.SetButtonColor(button, 'ooh')
 		--in range
 		else
 			tullaRange.SetButtonColor(button, 'normal')
@@ -218,17 +284,18 @@ end
 
 --[[ Configuration ]]--
 
-function tullaRange:LoadDefaults()
-	TULLARANGE_COLORS = {
+function tullaRange:GetDefaults()
+	return {
 		normal = {1, 1, 1},
 		oor = {1, 0.3, 0.1},
 		oom = {0.1, 0.3, 1},
+		ooh = {0.45, 0.45, 1},
 	}
 end
 
 function tullaRange:Reset()
-	self:LoadDefaults()
-	self.colors = TULLARANGE_COLORS
+	TULLARANGE_COLORS = {}
+	self.colors = copyDefaults(TULLARANGE_COLORS, self:GetDefaults())
 
 	self:ForceColorUpdate()
 end
