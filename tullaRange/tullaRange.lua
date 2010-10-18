@@ -9,8 +9,7 @@
 local _G = _G
 local UPDATE_DELAY = 0.1
 local ATTACK_BUTTON_FLASH_TIME = ATTACK_BUTTON_FLASH_TIME
-local PLAYER_IS_PALADIN = false
-
+local SPELL_POWER_HOLY_POWER = SPELL_POWER_HOLY_POWER
 local ActionButton_GetPagedID = ActionButton_GetPagedID
 local ActionButton_IsFlashing = ActionButton_IsFlashing
 local ActionHasRange = ActionHasRange
@@ -18,6 +17,17 @@ local IsActionInRange = IsActionInRange
 local IsUsableAction = IsUsableAction
 local HasAction = HasAction
 
+--stuff for holy power detection
+local HAND_OF_LIGHT = GetSpellInfo(90174)
+local PLAYER_IS_PALADIN = select(2, UnitClass('player')) == 'PALADIN'
+local HOLY_POWER_SPELLS = {
+	[85256] = GetSpellInfo(85256),
+	[53385] = GetSpellInfo(53385),
+	[53600] = GetSpellInfo(53600),
+	[84963] = GetSpellInfo(84963)
+}
+
+--code for handling defaults
 local function removeDefaults(tbl, defaults)
 	for k, v in pairs(defaults) do
 		if type(tbl[k]) == 'table' and type(v) == 'table' then
@@ -85,15 +95,6 @@ end
 --[[ Game Events ]]--
 
 function tullaRange:PLAYER_LOGIN()
-HOLY_POWER_SPELLS = {
-	[85256] = GetSpellInfo(85256),
-	[53385] = GetSpellInfo(53385),
-	[53600] = GetSpellInfo(53600),
-	[84963] = GetSpellInfo(84963)
-}
-
-PLAYER_IS_PALADIN = (select(2, UnitClass('player') == 'PALADIN'))
-
 	if not TULLARANGE_COLORS then
 		TULLARANGE_COLORS = {}
 	end
@@ -198,7 +199,7 @@ end
 --[[ Range Coloring ]]--
 
 local function isHolyPowerAbility(actionId)
-	local actionType, id = GetActioninfo(actionId)
+	local actionType, id = GetActionInfo(actionId)
 	if acitonType == 'macro' then
 		local macroSpell = GetMacroSpell(id)
 		if macroSpell then
@@ -229,7 +230,7 @@ function tullaRange.UpdateButtonUsable(button)
 		if IsActionInRange(action) == 0 then
 			tullaRange.SetButtonColor(button, 'oor')
 		--a holy power abilty, and we're less than 3 Holy Power
-		elseif PLAYER_IS_PALADIN and isHolyPowerAbility(action) and not(UnitPower('player', SPELL_POWER_HOLY_POWER) == 3 or UnitBuff('player', 'Hand of Light')) then
+		elseif PLAYER_IS_PALADIN and isHolyPowerAbility(action) and not(UnitPower('player', SPELL_POWER_HOLY_POWER) == 3 or UnitBuff('player', HAND_OF_LIGHT)) then
 			tullaRange.SetButtonColor(button, 'ooh')
 		--in range
 		else
