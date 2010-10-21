@@ -4,10 +4,9 @@
 		Derived from RedRange with negligable improvements to CPU usage
 --]]
 
---[[ locals and speed ]]--
-
+--locals and speed
 local _G = _G
-local UPDATE_DELAY = 0.1
+local UPDATE_DELAY = 0.15
 local ATTACK_BUTTON_FLASH_TIME = ATTACK_BUTTON_FLASH_TIME
 local SPELL_POWER_HOLY_POWER = SPELL_POWER_HOLY_POWER
 local ActionButton_GetPagedID = ActionButton_GetPagedID
@@ -17,15 +16,6 @@ local IsActionInRange = IsActionInRange
 local IsUsableAction = IsUsableAction
 local HasAction = HasAction
 
---stuff for holy power detection
-local HAND_OF_LIGHT = GetSpellInfo(90174)
-local PLAYER_IS_PALADIN = select(2, UnitClass('player')) == 'PALADIN'
-local HOLY_POWER_SPELLS = {
-	[85256] = GetSpellInfo(85256),
-	[53385] = GetSpellInfo(53385),
-	[53600] = GetSpellInfo(53600),
-	[84963] = GetSpellInfo(84963)
-}
 
 --code for handling defaults
 local function removeDefaults(tbl, defaults)
@@ -53,18 +43,75 @@ local function copyDefaults(tbl, defaults)
 	return tbl
 end
 
+local function timer_Create(parent, interval)
+	local updater = parent:CreateAnimationGroup()
+	updater:SetLooping('NONE')
+	updater:SetScript('OnFinished', function(self)
+		if parent:Update() then
+			parent:Start(interval)
+		end
+	end)
+
+	local a = updater:CreateAnimation('Animation'); a:SetOrder(1)
+
+	parent.Start = function(self)
+		self:Stop()
+		a:SetDuration(interval)
+		updater:Play()
+		return self
+	end
+
+	parent.Stop = function(self)
+		if updater:IsPlaying() then
+			updater:Stop()
+		end
+		return self
+	end
+
+	parent.Active = function(self)
+		return updater:IsPlaying()
+	end
+
+	return parent
+end
+
+--stuff for holy power detection
+local PLAYER_IS_PALADIN = select(2, UnitClass('player')) == 'PALADIN'
+local HAND_OF_LIGHT = GetSpellInfo(90174)
+local isHolyPowerAbility
+do
+	local HOLY_POWER_SPELLS = {
+		[85256] = GetSpellInfo(85256), --Templar's Verdict
+		[53385] = GetSpellInfo(53385), --Divine Storm
+		[53600] = GetSpellInfo(53600), --Shield of the Righteous
+		[84963] = GetSpellInfo(84963), --Inquisition
+	}
+
+	isHolyPowerAbility = function(actionId)
+		local actionType, id = GetActionInfo(actionId)
+		if actionType == 'macro' then
+			local macroSpell = GetMacroSpell(id)
+			if macroSpell then
+				for spellId, spellName in pairs(HOLY_POWER_SPELLS) do
+					if macroSpell == spellName then
+						return true
+					end
+				end
+			end
+		else
+			return HOLY_POWER_SPELLS[id]
+		end
+		return false
+	end
+end
 
 
 --[[ The main thing ]]--
 
-local tullaRange = CreateFrame('Frame', 'tullaRange', UIParent); tullaRange:Hide()
+local tullaRange = timer_Create(CreateFrame('Frame', 'tullaRange'), UPDATE_DELAY)
 
 function tullaRange:Load()
-	self:SetScript('OnUpdate', self.OnUpdate)
-	self:SetScript('OnHide', self.OnHide)
 	self:SetScript('OnEvent', self.OnEvent)
-	self.elapsed = 0
-
 	self:RegisterEvent('PLAYER_LOGIN')
 	self:RegisterEvent('PLAYER_LOGOUT')
 end
@@ -78,19 +125,6 @@ function tullaRange:OnEvent(event, ...)
 		action(self, event, ...)
 	end
 end
-
-function tullaRange:OnUpdate(elapsed)
-	if self.elapsed < UPDATE_DELAY then
-		self.elapsed = self.elapsed + elapsed
-	else
-		self:Update()
-	end
-end
-
-function tullaRange:OnHide()
-	self.elapsed = 0
-end
-
 
 --[[ Game Events ]]--
 
@@ -122,8 +156,7 @@ end
 --[[ Actions ]]--
 
 function tullaRange:Update()
-	self:UpdateButtons(self.elapsed)
-	self.elapsed = 0
+	return self:UpdateButtons(UPDATE_DELAY)
 end
 
 function tullaRange:ForceColorUpdate()
@@ -132,23 +165,24 @@ function tullaRange:ForceColorUpdate()
 	end
 end
 
-function tullaRange:UpdateShown()
+function tullaRange:UpdateActive()
 	if next(self.buttonsToUpdate) then
-		self:Show()
+		if not self:Active() then
+			self:Start()
+		end
 	else
-		self:Hide()
+		self:Stop()
 	end
 end
 
 function tullaRange:UpdateButtons(elapsed)
-	if not next(self.buttonsToUpdate) then
-		self:Hide()
-		return
+	if next(self.buttonsToUpdate) then
+		for button in pairs(self.buttonsToUpdate) do
+			self:UpdateButton(button, elapsed)
+		end
+		return true
 	end
-
-	for button in pairs(self.buttonsToUpdate) do
-		self:UpdateButton(button, elapsed)
-	end
+	return false
 end
 
 function tullaRange:UpdateButton(button, elapsed)
@@ -158,12 +192,12 @@ end
 
 function tullaRange:UpdateButtonStatus(button)
 	local action = ActionButton_GetPagedID(button)
-	if not(button:IsVisible() and action and HasAction(action) and ActionHasRange(action)) then
-		self.buttonsToUpdate[button] = nil
-	else
+	if button:IsVisible() and action and HasAction(action) and ActionHasRange(action) then
 		self.buttonsToUpdate[button] = true
+	else
+		self.buttonsToUpdate[button] = nil
 	end
-	self:UpdateShown()
+	self:UpdateActive()
 end
 
 
@@ -197,28 +231,6 @@ end
 
 
 --[[ Range Coloring ]]--
-
-local function isHolyPowerAbility(actionId)
-	local actionType, id = GetActionInfo(actionId)
-	if acitonType == 'macro' then
-		local macroSpell = GetMacroSpell(id)
-		if macroSpell then
-			for spellId, spellName in pairs(HOLY_POWER_SPELLS) do
-				if macroSpell == spellName then
-					return true
-				end
-			end
-		end
-	else
-		for spellId, spellName in pairs(HOLY_POWER_SPELLS) do
-			if id == spellId then
-				return true
-			end
-		end
-	end
-	
-	return false
-end
 
 function tullaRange.UpdateButtonUsable(button)
 	local action = ActionButton_GetPagedID(button)
