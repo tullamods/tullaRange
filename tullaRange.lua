@@ -85,6 +85,7 @@ do
 		[53385] = GetSpellInfo(53385), --Divine Storm
 		[53600] = GetSpellInfo(53600), --Shield of the Righteous
 		[84963] = GetSpellInfo(84963), --Inquisition
+		[85673] = GetSpellInfo(85673), --Word of Glory
 	}
 
 	isHolyPowerAbility = function(actionId)
