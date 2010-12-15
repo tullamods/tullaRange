@@ -84,7 +84,7 @@ do
 		[85256] = GetSpellInfo(85256), --Templar's Verdict
 --		[53385] = GetSpellInfo(53385), --Divine Storm
 		[53600] = GetSpellInfo(53600), --Shield of the Righteous
-		[84963] = GetSpellInfo(84963), --Inquisition
+--		[84963] = GetSpellInfo(84963), --Inquisition
 --		[85673] = GetSpellInfo(85673), --Word of Glory (Not included: linear increase per holy power)
 --		[85222] = GetSpellInfo(85222), --Light of Dawn (Not included: linear increase per holy power)
 	}
