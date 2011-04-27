@@ -54,7 +54,7 @@ function ColorOptions:UpdateWidgets()
 	if not self:IsVisible() then
 		return
 	end
-	
+
 	if self.sliders then
 		for i, s in pairs(self.sliders) do
 			s:UpdateValue()
@@ -101,7 +101,7 @@ end
 --[[ Sliders ]]--
 
 function ColorOptions:NewSlider(name, low, high, step)
-	local s = OmniCCOptions.Slider:New(name, self, low, high, step)
+	local s = tullaRangeConfig.OptionsSlider:New(name, self, low, high, step)
 	s:SetHeight(s:GetHeight() + 2)
 
 	self.sliders = self.sliders or {}
