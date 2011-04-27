@@ -134,7 +134,7 @@ function tullaRange:PLAYER_LOGIN()
 	if not TULLARANGE_COLORS then
 		TULLARANGE_COLORS = {}
 	end
-	self.colors = copyDefaults(TULLARANGE_COLORS, self:GetDefaults())
+	self.sets = copyDefaults(TULLARANGE_COLORS, self:GetDefaults())
 
 	--add options loader
 	local f = CreateFrame('Frame', nil, InterfaceOptionsFrame)
@@ -244,7 +244,7 @@ function tullaRange.UpdateButtonUsable(button)
 		if IsActionInRange(action) == 0 then
 			tullaRange.SetButtonColor(button, 'oor')
 		--a holy power abilty, and we're less than 3 Holy Power
-		elseif PLAYER_IS_PALADIN and isHolyPowerAbility(action) and not(UnitPower('player', SPELL_POWER_HOLY_POWER) == 3 or UnitBuff('player', HAND_OF_LIGHT)) then
+		elseif PLAYER_IS_PALADIN and isHolyPowerAbility(action) and not(UnitPower('player', SPELL_POWER_HOLY_POWER) >= tullaRange:GetHolyPowerThreshold() or UnitBuff('player', HAND_OF_LIGHT)) then
 			tullaRange.SetButtonColor(button, 'ooh')
 		--in range
 		else
@@ -252,7 +252,12 @@ function tullaRange.UpdateButtonUsable(button)
 		end
 	--out of mana
 	elseif notEnoughMana then
-		tullaRange.SetButtonColor(button, 'oom')
+		--a holy power abilty, and we're less than 3 Holy Power
+		if PLAYER_IS_PALADIN and isHolyPowerAbility(action) and not(UnitPower('player', SPELL_POWER_HOLY_POWER) >= tullaRange:GetHolyPowerThreshold() or UnitBuff('player', HAND_OF_LIGHT)) then
+			tullaRange.SetButtonColor(button, 'ooh')
+		else
+			tullaRange.SetButtonColor(button, 'oom')
+		end
 	--unusable
 	else
 		button.tullaRangeColor = 'unusuable'
@@ -305,18 +310,19 @@ function tullaRange:GetDefaults()
 		oor = {1, 0.3, 0.1},
 		oom = {0.1, 0.3, 1},
 		ooh = {0.45, 0.45, 1},
+		holyPowerThreshold = 3
 	}
 end
 
 function tullaRange:Reset()
 	TULLARANGE_COLORS = {}
-	self.colors = copyDefaults(TULLARANGE_COLORS, self:GetDefaults())
+	self.sets = copyDefaults(TULLARANGE_COLORS, self:GetDefaults())
 
 	self:ForceColorUpdate()
 end
 
 function tullaRange:SetColor(index, r, g, b)
-	local color = self.colors[index]
+	local color = self.sets[index]
 	color[1] = r
 	color[2] = g
 	color[3] = b
@@ -325,8 +331,16 @@ function tullaRange:SetColor(index, r, g, b)
 end
 
 function tullaRange:GetColor(index)
-	local color = self.colors[index]
+	local color = self.sets[index]
 	return color[1], color[2], color[3]
+end
+
+function tullaRange:SetHolyPowerThreshold(value)
+	self.sets.holyPowerThreshold = value
+end
+
+function tullaRange:GetHolyPowerThreshold()
+	return self.sets.holyPowerThreshold
 end
 
 --[[ Load The Thing ]]--
