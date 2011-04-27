@@ -13,3 +13,5 @@ L.ColorSettingsTitle = 'tullaRange color configuration settings.'
 L.Color_oor = 'Out of Range'
 L.Color_oom = 'Out of Mana'
 L.Color_ooh = 'Below Maximum Holy Power'
+
+L.HolyPowerThreshold = 'Holy Power Threshold'

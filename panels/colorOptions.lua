@@ -44,11 +44,21 @@ function ColorOptions:AddWidgets()
 		end
 		lastSelector = selector
 	end
+
+	local holyPowerThreshold = self:CreateMinPowerLevelSlider()
+	holyPowerThreshold:SetPoint('BOTTOMLEFT', self, 'BOTTOMLEFT', 16, 10)
+	holyPowerThreshold:SetPoint('BOTTOMRIGHT', self, 'BOTTOMRIGHT', -16, 10)
 end
 
 function ColorOptions:UpdateWidgets()
 	if not self:IsVisible() then
 		return
+	end
+	
+	if self.sliders then
+		for i, s in pairs(self.sliders) do
+			s:UpdateValue()
+		end
 	end
 
 	for i, type in self:GetColorTypes() do
@@ -85,6 +95,35 @@ end
 
 function ColorOptions:GetColorSelector(type)
 	return self.colorSelectors and self.colorSelectors[type]
+end
+
+
+--[[ Sliders ]]--
+
+function ColorOptions:NewSlider(name, low, high, step)
+	local s = OmniCCOptions.Slider:New(name, self, low, high, step)
+	s:SetHeight(s:GetHeight() + 2)
+
+	self.sliders = self.sliders or {}
+	table.insert(self.sliders, s)
+	return s
+end
+
+function ColorOptions:CreateMinPowerLevelSlider()
+	local parent = self
+	local s = self:NewSlider(L.HolyPowerThreshold, 0, 3, 1)
+
+	s.SetSavedValue = function(self, value)
+		tullaRange:SetHolyPowerThreshold(value)
+	end
+
+	s.GetSavedValue = function(self)
+		return tullaRange:GetHolyPowerThreshold()
+	end
+
+	--s.tooltip = L.MinSizeTip
+
+	return s
 end
 
 --[[ Load the thing ]]--

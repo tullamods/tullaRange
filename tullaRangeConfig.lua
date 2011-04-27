@@ -19,23 +19,6 @@ function Classy:New(frameType, parentClass)
 	class.Bind = function(self, obj)
 		return setmetatable(obj, self.mt)
 	end
-	
-	--callback support
-	class.RegisterMessage = function(self, ...)
-		Bagnon.Callbacks:Listen(self, ...)
-	end
-	
-	class.SendMessage = function(self, ...)
-		Bagnon.Callbacks:SendMessage(...)
-	end
-	
-	class.UnregisterMessage = function(self, ...)
-		Bagnon.Callbacks:Ignore(self, ...)
-	end
-	
-	class.UnregisterAllMessages = function(self, ...)
-		Bagnon.Callbacks:IgnoreAll(self, ...)
-	end
 
 	return class
 end
