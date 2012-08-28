@@ -7,14 +7,14 @@
 --locals and speed
 local _G = _G
 local UPDATE_DELAY = 0.15
-local ATTACK_BUTTON_FLASH_TIME = ATTACK_BUTTON_FLASH_TIME
-local SPELL_POWER_HOLY_POWER = SPELL_POWER_HOLY_POWER
-local ActionButton_GetPagedID = ActionButton_GetPagedID
-local ActionButton_IsFlashing = ActionButton_IsFlashing
-local ActionHasRange = ActionHasRange
-local IsActionInRange = IsActionInRange
-local IsUsableAction = IsUsableAction
-local HasAction = HasAction
+local ATTACK_BUTTON_FLASH_TIME = _G['ATTACK_BUTTON_FLASH_TIME']
+local SPELL_POWER_HOLY_POWER = _G['SPELL_POWER_HOLY_POWER']
+local ActionButton_GetPagedID = _G['ActionButton_GetPagedID']
+local ActionButton_IsFlashing = _G['ActionButton_IsFlashing']
+local ActionHasRange = _G['ActionHasRange']
+local IsActionInRange = _G['IsActionInRange']
+local IsUsableAction = _G['IsUsableAction']
+local HasAction = _G['HasAction']
 
 
 --code for handling defaults
@@ -73,38 +73,6 @@ local function timer_Create(parent, interval)
 	end
 
 	return parent
-end
-
---stuff for holy power detection
-local PLAYER_IS_PALADIN = select(2, UnitClass('player')) == 'PALADIN'
-local HAND_OF_LIGHT = GetSpellInfo(90174)
-local isHolyPowerAbility
-do
-	local HOLY_POWER_SPELLS = {
-		[85256] = GetSpellInfo(85256), --Templar's Verdict
---		[53385] = GetSpellInfo(53385), --Divine Storm
-		[53600] = GetSpellInfo(53600), --Shield of the Righteous
---		[84963] = GetSpellInfo(84963), --Inquisition
---		[85673] = GetSpellInfo(85673), --Word of Glory (Not included: linear increase per holy power)
---		[85222] = GetSpellInfo(85222), --Light of Dawn (Not included: linear increase per holy power)
-	}
-
-	isHolyPowerAbility = function(actionId)
-		local actionType, id = GetActionInfo(actionId)
-		if actionType == 'macro' then
-			local macroSpell = GetMacroSpell(id)
-			if macroSpell then
-				for spellId, spellName in pairs(HOLY_POWER_SPELLS) do
-					if macroSpell == spellName then
-						return true
-					end
-				end
-			end
-		else
-			return HOLY_POWER_SPELLS[id]
-		end
-		return false
-	end
 end
 
 
@@ -243,21 +211,12 @@ function tullaRange.UpdateButtonUsable(button)
 		--but out of range
 		if IsActionInRange(action) == 0 then
 			tullaRange.SetButtonColor(button, 'oor')
-		--a holy power abilty, and we're less than 3 Holy Power
-		elseif PLAYER_IS_PALADIN and isHolyPowerAbility(action) and not(UnitPower('player', SPELL_POWER_HOLY_POWER) >= tullaRange:GetHolyPowerThreshold() or UnitBuff('player', HAND_OF_LIGHT)) then
-			tullaRange.SetButtonColor(button, 'ooh')
-		--in range
 		else
 			tullaRange.SetButtonColor(button, 'normal')
 		end
 	--out of mana
 	elseif notEnoughMana then
-		--a holy power abilty, and we're less than 3 Holy Power
-		if PLAYER_IS_PALADIN and isHolyPowerAbility(action) and not(UnitPower('player', SPELL_POWER_HOLY_POWER) >= tullaRange:GetHolyPowerThreshold() or UnitBuff('player', HAND_OF_LIGHT)) then
-			tullaRange.SetButtonColor(button, 'ooh')
-		else
-			tullaRange.SetButtonColor(button, 'oom')
-		end
+		tullaRange.SetButtonColor(button, 'oom')
 	--unusable
 	else
 		button.tullaRangeColor = 'unusuable'
@@ -269,9 +228,7 @@ function tullaRange.SetButtonColor(button, colorType)
 		button.tullaRangeColor = colorType
 
 		local r, g, b = tullaRange:GetColor(colorType)
-
-		local icon =  _G[button:GetName() .. 'Icon']
-		icon:SetVertexColor(r, g, b)
+		button.icon:SetVertexColor(r, g, b)
 	end
 end
 
@@ -305,9 +262,7 @@ function tullaRange:GetDefaults()
 	return {
 		normal = {1, 1, 1},
 		oor = {1, 0.3, 0.1},
-		oom = {0.1, 0.3, 1},
-		ooh = {0.45, 0.45, 1},
-		holyPowerThreshold = 3
+		oom = {0.1, 0.3, 1}
 	}
 end
 
@@ -330,14 +285,6 @@ end
 function tullaRange:GetColor(index)
 	local color = self.sets[index]
 	return color[1], color[2], color[3]
-end
-
-function tullaRange:SetHolyPowerThreshold(value)
-	self.sets.holyPowerThreshold = value
-end
-
-function tullaRange:GetHolyPowerThreshold()
-	return self.sets.holyPowerThreshold
 end
 
 --[[ Load The Thing ]]--
