@@ -3,12 +3,12 @@
 		General Bagnon settings
 --]]
 
-local L = TULLARANGE_CONFIG_LOCALS
+local L = _G['TULLARANGE_CONFIG_LOCALS']
 local ColorOptions = tullaRangeConfig.OptionsPanel:New('tullaRangeOptions_Colors', 'tullaRange', L.ColorSettings, L.ColorSettingsTitle); ColorOptions:Hide()
 tullaRangeConfig.ColorOptions = ColorOptions
 
 local SPACING = 4
-local COLOR_TYPES = {'oor', 'oom', 'ooh'}
+local COLOR_TYPES = {'oor', 'oom'}
 
 --[[
 	Startup
@@ -44,10 +44,6 @@ function ColorOptions:AddWidgets()
 		end
 		lastSelector = selector
 	end
-
-	local holyPowerThreshold = self:CreateMinPowerLevelSlider()
-	holyPowerThreshold:SetPoint('BOTTOMLEFT', self, 'BOTTOMLEFT', 16, 10)
-	holyPowerThreshold:SetPoint('BOTTOMRIGHT', self, 'BOTTOMRIGHT', -16, 10)
 end
 
 function ColorOptions:UpdateWidgets()
@@ -106,23 +102,6 @@ function ColorOptions:NewSlider(name, low, high, step)
 
 	self.sliders = self.sliders or {}
 	table.insert(self.sliders, s)
-	return s
-end
-
-function ColorOptions:CreateMinPowerLevelSlider()
-	local parent = self
-	local s = self:NewSlider(L.HolyPowerThreshold, 0, 3, 1)
-
-	s.SetSavedValue = function(self, value)
-		tullaRange:SetHolyPowerThreshold(value)
-	end
-
-	s.GetSavedValue = function(self)
-		return tullaRange:GetHolyPowerThreshold()
-	end
-
-	--s.tooltip = L.MinSizeTip
-
 	return s
 end
 
