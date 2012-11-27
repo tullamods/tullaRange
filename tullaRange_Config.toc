@@ -1,4 +1,4 @@
-## Interface: 50001
+## Interface: 50100
 ## Title: tullaRange Config
 ## Notes: GUI based configuration for tullaRange
 ## Author: Tuller
