@@ -5,16 +5,20 @@
 --]]
 
 --locals and speed
+local AddonName, Addon = ...
 local _G = _G
+
+local DB_KEY = 'TULLARANGE_COLORS'
 local UPDATE_DELAY = 0.15
 local ATTACK_BUTTON_FLASH_TIME = _G['ATTACK_BUTTON_FLASH_TIME']
 local SPELL_POWER_HOLY_POWER = _G['SPELL_POWER_HOLY_POWER']
-local ActionButton_GetPagedID = _G['ActionButton_GetPagedID']
-local ActionButton_IsFlashing = _G['ActionButton_IsFlashing']
+
 local ActionHasRange = _G['ActionHasRange']
 local IsActionInRange = _G['IsActionInRange']
 local IsUsableAction = _G['IsUsableAction']
 local HasAction = _G['HasAction']
+local GetTime = _G['GetTime']
+local Timer_After = _G['CTimer'].After
 
 
 --code for handling defaults
@@ -43,54 +47,41 @@ local function copyDefaults(tbl, defaults)
 	return tbl
 end
 
-local function timer_Create(parent, interval)
-	local updater = parent:CreateAnimationGroup()
-	updater:SetLooping('NONE')
-	updater:SetScript('OnFinished', function(self)
-		if parent:Update() then
-			parent:Start(interval)
-		end
-	end)
-
-	local a = updater:CreateAnimation('Animation'); a:SetOrder(1)
-
-	parent.Start = function(self)
-		self:Stop()
-		a:SetDuration(interval)
-		updater:Play()
-		return self
-	end
-
-	parent.Stop = function(self)
-		if updater:IsPlaying() then
-			updater:Stop()
-		end
-		return self
-	end
-
-	parent.Active = function(self)
-		return updater:IsPlaying()
-	end
-
-	return parent
-end
-
 
 --[[ The main thing ]]--
 
-local tullaRange = timer_Create(CreateFrame('Frame', 'tullaRange'), UPDATE_DELAY)
+function Addon:Load()
+	self.buttonsToUpdate = {}
 
-function tullaRange:Load()
-	self:SetScript('OnEvent', self.OnEvent)
-	self:RegisterEvent('PLAYER_LOGIN')
-	self:RegisterEvent('PLAYER_LOGOUT')
+	self.started = nil
+
+	self.updateFinshed = function()
+		local elapsed = GetTime() - self.started
+		self.started = nil
+
+		self:Update()
+	end
+
+	local f = CreateFrame('Frame', nil, _G['InterfaceOptionsFrame'])
+
+	f:SetScript('OnShow', function()
+		f:SetScript('OnShow', nil)
+
+		LoadAddOn(AddonName .. '_Config')
+	end)
+
+	f:SetScript('OnEvent', self.OnEvent)
+
+	f:RegisterEvent('PLAYER_LOGIN')
+	f:RegisterEvent('PLAYER_LOGOUT')
 end
 
 
 --[[ Frame Events ]]--
 
-function tullaRange:OnEvent(event, ...)
+function Addon:OnEvent(event, ...)
 	local action = self[event]
+
 	if action then
 		action(self, event, ...)
 	end
@@ -98,75 +89,73 @@ end
 
 --[[ Game Events ]]--
 
-function tullaRange:PLAYER_LOGIN()
-	if not TULLARANGE_COLORS then
-		TULLARANGE_COLORS = {}
-	end
-	self.sets = copyDefaults(TULLARANGE_COLORS, self:GetDefaults())
-
-	--add options loader
-	local f = CreateFrame('Frame', nil, InterfaceOptionsFrame)
-	f:SetScript('OnShow', function(self)
-		self:SetScript('OnShow', nil)
-		LoadAddOn('tullaRange_Config')
-	end)
-
-	self.buttonsToUpdate = {}
-
-	hooksecurefunc('ActionButton_OnUpdate', self.RegisterButton)
-	hooksecurefunc('ActionButton_UpdateUsable', self.OnUpdateButtonUsable)
-	hooksecurefunc('ActionButton_Update', self.OnButtonUpdate)
+function Addon:PLAYER_LOGIN()
+	self:SetupDatabase()
+	self:HookActionEvents()
 end
 
-function tullaRange:PLAYER_LOGOUT()
-	removeDefaults(TULLARANGE_COLORS, self:GetDefaults())
+function Addon:PLAYER_LOGOUT()
+	self:CleanupDatabase()
 end
 
 
 --[[ Actions ]]--
 
-function tullaRange:Update()
-	return self:UpdateButtons(UPDATE_DELAY)
-end
+function Addon:RequestUpdate()
+	if not self.timerDone then
+		self.timerDone = function()
+			local elapsed = GetTime() - self.started
+			self.started = nil
 
-function tullaRange:ForceColorUpdate()
-	for button in pairs(self.buttonsToUpdate) do
-		tullaRange.OnUpdateButtonUsable(button)
-	end
-end
-
-function tullaRange:UpdateActive()
-	if next(self.buttonsToUpdate) then
-		if not self:Active() then
-			self:Start()
+			if self:Update(elapsed) then
+				self:RequestUpdate()
+			end
 		end
-	else
-		self:Stop()
+	end
+
+	if not self.started then
+		self.started = GetTime()
+
+		Timer_After(UPDATE_DELAY, self.timerDone)
 	end
 end
 
-function tullaRange:UpdateButtons(elapsed)
+function Addon:Update(elapsed)
+	return self:UpdateButtons(elapsed)
+end
+
+function Addon:UpdateActive()
+	if next(self.buttonsToUpdate) then
+		self:RequestUpdate()
+	end
+end
+
+function Addon:UpdateButtons(elapsed)
 	if next(self.buttonsToUpdate) then
 		for button in pairs(self.buttonsToUpdate) do
 			self:UpdateButton(button, elapsed)
 		end
+
 		return true
 	end
+
 	return false
 end
 
-function tullaRange:UpdateButton(button, elapsed)
-	tullaRange.UpdateButtonUsable(button)
-	tullaRange.UpdateFlash(button, elapsed)
+function Addon:UpdateButton(button, elapsed)
+	self:UpdateButtonUsable(button)
+	self:UpdateFlash(button, elapsed)
 end
 
-function tullaRange:UpdateButtonStatus(button)
-	local action = ActionButton_GetPagedID(button)
+function Addon:UpdateButtonStatus(button)
+	local action = button.action
+
 	if button:IsVisible() and action and HasAction(action) and ActionHasRange(action) then
 		self.buttonsToUpdate[button] = true
 	else
 		self.buttonsToUpdate[button] = nil
 	end
+
 	self:UpdateActive()
 end
 
@@ -174,66 +163,76 @@ end
 
 --[[ Button Hooking ]]--
 
-function tullaRange.RegisterButton(button)
-	button:HookScript('OnShow', tullaRange.OnButtonShow)
-	button:HookScript('OnHide', tullaRange.OnButtonHide)
-	button:SetScript('OnUpdate', nil)
+do
+	local function button_OnShow(button)
+		Addon:UpdateButtonStatus(button)
+	end
 
-	tullaRange:UpdateButtonStatus(button)
+	local function button_OnHide(button)
+		Addon:UpdateButtonStatus(button)
+	end
+
+	local function button_OnUpdateUsable(button)
+		Addon:UpdateButtonUsable(button, true)
+	end
+
+	local function button_OnUpdate(button)
+		Addon:Register(button)
+	end
+
+	function Addon:HookActionEvents()
+		hooksecurefunc('ActionButton_OnUpdate', button_OnUpdate)
+		hooksecurefunc('ActionButton_UpdateUsable', button_OnUpdateUsable)
+		hooksecurefunc('ActionButton_Update', button_OnUpdate)
+	end
+
+	function Addon:Register(button)
+		button:HookScript('OnShow', button_OnShow)
+		button:HookScript('OnHide', button_OnHide)
+		button:SetScript('OnUpdate', nil)
+
+		self:UpdateButtonStatus(button)
+	end
 end
 
-function tullaRange.OnButtonShow(button)
-	tullaRange:UpdateButtonStatus(button)
+--[[ Button Updates ]]--
+
+function Addon:SetButtonColor(button, colorType)
+	if button.tullaRangeColor ~= colorType then
+		button.tullaRangeColor = colorType
+
+		local r, g, b = self:GetColor(colorType)
+		button.icon:SetVertexColor(r, g, b)
+	end
 end
 
-function tullaRange.OnButtonHide(button)
-	tullaRange:UpdateButtonStatus(button)
-end
+function Addon:UpdateButtonUsable(button, force)
+	if force then
+		button.tullaRangeColor = nil
+	end
 
-function tullaRange.OnUpdateButtonUsable(button)
-	button.tullaRangeColor = nil
-	tullaRange.UpdateButtonUsable(button)
-end
-
-function tullaRange.OnButtonUpdate(button)
-	 tullaRange:UpdateButtonStatus(button)
-end
-
-
---[[ Range Coloring ]]--
-
-function tullaRange.UpdateButtonUsable(button)
-	local action = ActionButton_GetPagedID(button)
+	local action = button.action
 	local isUsable, notEnoughMana = IsUsableAction(action)
 
 	--usable
 	if isUsable then
 		--but out of range
 		if IsActionInRange(action) == 0 then
-			tullaRange.SetButtonColor(button, 'oor')
+			self:SetButtonColor(button, 'oor')
 		else
-			tullaRange.SetButtonColor(button, 'normal')
+			self:SetButtonColor(button, 'normal')
 		end
 	--out of mana
 	elseif notEnoughMana then
-		tullaRange.SetButtonColor(button, 'oom')
+		self:SetButtonColor(button, 'oom')
 	--unusable
 	else
 		button.tullaRangeColor = 'unusuable'
 	end
 end
 
-function tullaRange.SetButtonColor(button, colorType)
-	if button.tullaRangeColor ~= colorType then
-		button.tullaRangeColor = colorType
-
-		local r, g, b = tullaRange:GetColor(colorType)
-		button.icon:SetVertexColor(r, g, b)
-	end
-end
-
-function tullaRange.UpdateFlash(button, elapsed)
-	if ActionButton_IsFlashing(button) then
+function Addon:UpdateFlash(button, elapsed)
+	if button.flashing then
 		local flashtime = button.flashtime - elapsed
 
 		if flashtime <= 0 then
@@ -243,7 +242,7 @@ function tullaRange.UpdateFlash(button, elapsed)
 			end
 			flashtime = ATTACK_BUTTON_FLASH_TIME - overtime
 
-			local flashTexture = _G[button:GetName() .. 'Flash']
+			local flashTexture = button.Flash
 			if flashTexture:IsShown() then
 				flashTexture:Hide()
 			else
@@ -258,7 +257,26 @@ end
 
 --[[ Configuration ]]--
 
-function tullaRange:GetDefaults()
+function Addon:SetupDatabase()
+	local sets = _G[DB_KEY]
+
+	if not sets then
+		sets = {}
+		_G[DB_KEY] = sets
+	end
+
+	self.sets = copyDefaults(sets, self:GetDatabaseDefaults())
+end
+
+function Addon:CleanupDatabase()
+	local sets = _G[DB_KEY]
+
+	if sets then
+		removeDefaults(sets, self:GetDatabaseDefaults())
+	end
+end
+
+function Addon:GetDatabaseDefaults()
 	return {
 		normal = {1, 1, 1},
 		oor = {1, 0.3, 0.1},
@@ -266,15 +284,16 @@ function tullaRange:GetDefaults()
 	}
 end
 
-function tullaRange:Reset()
-	TULLARANGE_COLORS = {}
-	self.sets = copyDefaults(TULLARANGE_COLORS, self:GetDefaults())
+function Addon:ResetDatabase()
+	_G[DB_KEY] = nil
 
+	self:SetupDatabase()
 	self:ForceColorUpdate()
 end
 
-function tullaRange:SetColor(index, r, g, b)
+function Addon:SetColor(index, r, g, b)
 	local color = self.sets[index]
+
 	color[1] = r
 	color[2] = g
 	color[3] = b
@@ -282,11 +301,22 @@ function tullaRange:SetColor(index, r, g, b)
 	self:ForceColorUpdate()
 end
 
-function tullaRange:GetColor(index)
+function Addon:GetColor(index)
 	local color = self.sets[index]
+
 	return color[1], color[2], color[3]
 end
 
+function Addon:ForceColorUpdate()
+	for button in pairs(self.buttonsToUpdate) do
+		self:UpdateButtonUsable(button, true)
+	end
+end
+
+
 --[[ Load The Thing ]]--
 
-tullaRange:Load()
+do
+	Addon:Load()
+	_G[AddonName] = Addon
+end
