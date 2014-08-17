@@ -1,10 +1,9 @@
-## Interface: 50400
+## Interface: 60000
 ## Title: tullaRange Config
 ## Notes: GUI based configuration for tullaRange
 ## Author: Tuller
 ## Dependencies: tullaRange
 ## LoadOnDemand: 1
-tullaRangeConfig.lua
 localization\localization.xml
 widgets\widgets.xml
-panels\panels.xml
+colorOptions.lua
