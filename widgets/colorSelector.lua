@@ -75,7 +75,7 @@ do
 		local offset = 0
 
 		for i = 1, GetNumSpellTabs() do
-			local offset, numSpells = select(2, GetSpellTabInfo(i))
+			local offset, numSpells = select(3, GetSpellTabInfo(i))
 			local tabEnd = offset + numSpells
 
 			for j = offset, tabEnd - 1 do
