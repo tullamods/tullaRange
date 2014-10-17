@@ -67,18 +67,34 @@ function ColorSelector:New(colorState, parent)
 	return f
 end
 
-function ColorSelector:UpdateValues()
+do
+	local spellIcons = {}
+
+	-- generate spell icons
 	do
-		local texture = nil
+		local offset = 0
 
-		while not texture do
-			texture = GetActionTexture(math.random(1, 120))
+		for i = 1, GetNumSpellTabs() do
+			local offset, numSpells = select(2, GetSpellTabInfo(i))
+			local tabEnd = offset + numSpells
+
+			for j = offset, tabEnd - 1 do
+				local texture = GetSpellBookItemTexture(j, 'player')
+				if texture then
+					table.insert(spellIcons, texture)
+				end
+			end
 		end
-
-		self.preview:SetTexture(texture)
 	end
 
-	for i, slider in pairs(self.sliders) do
-		slider:UpdateValue()
+	function ColorSelector:UpdateValues()
+
+		local texture = spellIcons[math.random(1, #spellIcons)]
+
+		self.preview:SetTexture(texture)
+
+		for i, slider in pairs(self.sliders) do
+			slider:UpdateValue()
+		end
 	end
 end
