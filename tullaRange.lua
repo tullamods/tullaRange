@@ -192,10 +192,8 @@ function Addon:UpdateButtonUsable(button, force)
 		--but out of range
 		if inRange == false then
 			self:SetButtonColor(button, 'oor')
-		elseif inRange == true then
+		else
 			self:SetButtonColor(button, 'normal')
-		-- else
-		-- 	self:SetButtonColor(button, 'unusable')
 		end
 	--out of mana
 	elseif notEnoughMana then
