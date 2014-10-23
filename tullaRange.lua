@@ -19,8 +19,6 @@ local ActionHasRange = _G['ActionHasRange']
 local IsActionInRange = _G['IsActionInRange']
 local IsUsableAction = _G['IsUsableAction']
 local HasAction = _G['HasAction']
-local GetTime = _G['GetTime']
-local Timer_After = _G['C_Timer'].After
 
 --[[
 	Helper Functions
@@ -62,20 +60,49 @@ function Addon:Load()
 	self.buttonColors = {}
 	self.buttonsToUpdate = {}
 
-	local f = CreateFrame('Frame', nil, _G['InterfaceOptionsFrame'])
+	-- create a frame for watching for the options menu to show up
+	-- when it does, load the options menu
+	do
+		local optionsWatcher = CreateFrame('Frame', nil, _G['InterfaceOptionsFrame'])
 
-	f:SetScript('OnShow', function()
-		f:SetScript('OnShow', nil)
-		LoadAddOn(AddonName .. '_Config')
-	end)
+		optionsWatcher:SetScript('OnShow', function(watcher)
+			watcher:SetScript('OnShow', nil)
+			LoadAddOn(AddonName .. '_Config')
+		end)
+	end
 
-	f:SetScript('OnEvent', function(frame, ...)
-		self:OnEvent(...)
-	end)
 
-	f:RegisterEvent('PLAYER_LOGIN')
-	f:RegisterEvent('PLAYER_LOGOUT')
+	-- create a frame for handling events and throttling timer updates
+	do
+		local eventHandler = CreateFrame('Frame', nil); eventHandler:Hide()
 
+		eventHandler.remain = UPDATE_DELAY
+
+		eventHandler:SetScript('OnEvent', function(handler, ...)
+			self:OnEvent(...)
+		end)
+
+		eventHandler:SetScript('OnUpdate', function(handler, elapsed)
+			local remain = handler.remain - elapsed
+
+			if remain > 0 then
+				handler.remain = remain
+			else
+				handler.remain = UPDATE_DELAY
+
+				if not self:UpdateButtons(UPDATE_DELAY - remain) then
+					handler:Hide()
+				end
+			end
+		end)
+
+		eventHandler:RegisterEvent('PLAYER_LOGIN')
+		eventHandler:RegisterEvent('PLAYER_LOGOUT')
+
+		self.updater = eventHandler
+	end
+
+	--make thyself global
 	_G[AddonName] = self
 end
 
@@ -140,36 +167,21 @@ end
 --]]
 
 function Addon:RequestUpdate()
-	if not next(self.buttonsToUpdate) then return end
-
-	if not self.timerDone then
-		self.timerDone = function()
-			local elapsed = GetTime() - self.started
-			self.started = nil
-
-			if self:UpdateButtons(elapsed) then
-				self:RequestUpdate()
-			end
-		end
-	end
-
-	if not self.started then
-		self.started = GetTime()
-
-		Timer_After(UPDATE_DELAY, self.timerDone)
-	end
+	if next(self.buttonsToUpdate) then 
+		self.updater:Show() 
+	end	
 end
 
 function Addon:UpdateButtons(elapsed)
-	if not next(self.buttonsToUpdate) then 
-		return false 
+	if next(self.buttonsToUpdate) then 
+		for button in pairs(self.buttonsToUpdate) do
+			self:UpdateButton(button, elapsed)
+		end
+
+		return true
 	end
 
-	for button in pairs(self.buttonsToUpdate) do
-		self:UpdateButton(button, elapsed)
-	end
-
-	return true
+	return false
 end
 
 function Addon:UpdateButton(button, elapsed)
