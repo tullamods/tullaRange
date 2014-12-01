@@ -19,7 +19,7 @@ local ColorSliders = { 'Red', 'Green', 'Blue' }
 
 
 function ColorSelector:New(colorState, parent)
-	local f = self:Bind(CreateFrame('Frame', parent:GetName() .. '_' .. colorState, parent))	
+	local f = self:Bind(CreateFrame('Frame', parent:GetName() .. '_' .. colorState, parent))
 
 	f:SetBackdrop(backdrop)
 	f:SetBackdropBorderColor(0.4, 0.4, 0.4)
@@ -38,21 +38,21 @@ function ColorSelector:New(colorState, parent)
 	-- color sliders
 	local sliders = {}
 	for colorIndex, colorName in ipairs(ColorSliders) do
-		local slider = Addon.Slider:New(colorName, f, 0, 100, 1)
+		local slider = Addon.Slider:New(L[colorName], f, 0, 100, 1)
 
 		slider.SetSavedValue = function(self, value)
 			tullaRange.sets[colorState][colorIndex] = math.floor(value + 0.5) / 100
-			tullaRange:ForceColorUpdate() 
+			tullaRange:ForceColorUpdate()
 
 			preview:SetVertexColor(tullaRange:GetColor(colorState))
 		end
 
-		slider.GetSavedValue = function(self)			
+		slider.GetSavedValue = function(self)
 			return tullaRange.sets[colorState][colorIndex] * 100
 		end
 
 		if colorIndex > 1 then
-			slider:SetPoint('TOPLEFT', sliders[colorIndex - 1], 'BOTTOMLEFT', 0, -24)	
+			slider:SetPoint('TOPLEFT', sliders[colorIndex - 1], 'BOTTOMLEFT', 0, -24)
 		else
 			slider:SetPoint('BOTTOMLEFT', t, 'BOTTOMLEFT', 8, -40)
 		end
