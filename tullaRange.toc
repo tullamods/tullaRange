@@ -1,7 +1,7 @@
-## Interface: 60100
+## Interface: 60200
 ## Title: tullaRange
 ## Author: Tuller
 ## Notes: Out of range coloring based on RedRange
-## Version: 6.1.0
+## Version: 6.2.0
 ## SavedVariables: TULLARANGE_COLORS
 tullaRange.lua
