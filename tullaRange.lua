@@ -52,8 +52,8 @@ local function copyDefaults(tbl, defaults)
 end
 
 
---[[ 
-	The main thing 
+--[[
+	The main thing
 --]]
 
 function Addon:Load()
@@ -107,8 +107,8 @@ function Addon:Load()
 end
 
 
---[[ 
-	Frame Events 
+--[[
+	Frame Events
 --]]
 
 function Addon:OnEvent(event, ...)
@@ -129,8 +129,8 @@ function Addon:PLAYER_LOGOUT()
 end
 
 
---[[ 
-	Button Hooking 
+--[[
+	Button Hooking
 --]]
 
 do
@@ -162,18 +162,18 @@ do
 end
 
 
---[[ 
-	Actions 
+--[[
+	Actions
 --]]
 
 function Addon:RequestUpdate()
-	if next(self.buttonsToUpdate) then 
-		self.updater:Show() 
-	end	
+	if next(self.buttonsToUpdate) then
+		self.updater:Show()
+	end
 end
 
 function Addon:UpdateButtons(elapsed)
-	if next(self.buttonsToUpdate) then 
+	if next(self.buttonsToUpdate) then
 		for button in pairs(self.buttonsToUpdate) do
 			self:UpdateButton(button, elapsed)
 		end
@@ -212,7 +212,7 @@ function Addon:UpdateButtonUsable(button, force)
 		self:SetButtonColor(button, 'oom')
 	--unusable
 	else
-		self:SetButtonColor(button, 'unusable')
+		self:SetButtonColor(button, 'unusable', true)
 	end
 end
 
@@ -253,18 +253,19 @@ function Addon:UpdateButtonStatus(button)
 	self:RequestUpdate()
 end
 
-function Addon:SetButtonColor(button, colorIndex)
+function Addon:SetButtonColor(button, colorIndex, desaturated)
 	if self.buttonColors[button] == colorIndex then return end
 
 	self.buttonColors[button] = colorIndex
 
 	local r, g, b = self:GetColor(colorIndex)
 	button.icon:SetVertexColor(r, g, b)
+	button.icon:SetDesaturated(desaturated or button.zoneAbilityDisabled)
 end
 
 
---[[ 
-	Configuration 
+--[[
+	Configuration
 --]]
 
 function Addon:SetupDatabase()
