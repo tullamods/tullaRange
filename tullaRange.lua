@@ -212,7 +212,7 @@ function Addon:UpdateButtonUsable(button, force)
 		self:SetButtonColor(button, 'oom')
 	--unusable
 	else
-		self:SetButtonColor(button, 'unusable', true)
+		self:SetButtonColor(button, 'unusable')
 	end
 end
 
@@ -253,14 +253,13 @@ function Addon:UpdateButtonStatus(button)
 	self:RequestUpdate()
 end
 
-function Addon:SetButtonColor(button, colorIndex, desaturated)
+function Addon:SetButtonColor(button, colorIndex)
 	if self.buttonColors[button] == colorIndex then return end
 
 	self.buttonColors[button] = colorIndex
 
 	local r, g, b = self:GetColor(colorIndex)
 	button.icon:SetVertexColor(r, g, b)
-	button.icon:SetDesaturated(desaturated or button.zoneAbilityDisabled)
 end
 
 
