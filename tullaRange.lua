@@ -13,9 +13,7 @@ local pairs = pairs
 local DB_KEY = 'TULLARANGE_COLORS'
 local UPDATE_DELAY = 0.15
 local ATTACK_BUTTON_FLASH_TIME = _G['ATTACK_BUTTON_FLASH_TIME']
-local SPELL_POWER_HOLY_POWER = _G['SPELL_POWER_HOLY_POWER']
 
-local ActionHasRange = _G['ActionHasRange']
 local IsActionInRange = _G['IsActionInRange']
 local IsUsableAction = _G['IsUsableAction']
 local HasAction = _G['HasAction']
