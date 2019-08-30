@@ -1,0 +1,5 @@
+package-as: tullaRange
+
+move-folders:
+  tullaRange/tullaRange: tullaRange
+  tullaRange/tullaRange_Config: tullaRange_Config
