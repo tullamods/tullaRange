@@ -1,1 +1,3 @@
-tullaRange is an addon that's main purpose is to make action buttons appear red when out of range.
+# tullaRange
+
+An addon for World of Warcraft that makes buttons appear red when out of range
