@@ -7,19 +7,37 @@ addons:
       - pandoc
 
 deploy:
-  # releases go to both wowi and curse
+  # retail releases
   - provider: script
     script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753 -w 15636
     on:
       tags: true
       condition: $TRAVIS_TAG =~ ^v?([0-9]+\.[0-9]+\.[0-9]+)$
 
-  # prerelease versions go only to curse
+  # retail alpha/betas
   - provider: script
-    script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753
+    script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753 -w 23158
     on:
       tags: true
-      condition: $TRAVIS_TAG =~ ^v?([0-9]+\.[0-9]+\.[0-9]+)-([0-9A-Za-z]+)$
+      condition: $TRAVIS_TAG =~ ^v?([0-9]+\.[0-9]+\.[0-9]+)-([A-Za-z]+)([0-9]*)$
 
-on:
-  tags: true
+  # classic release
+  - provider: script
+    script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.2 -p 26753
+    on:
+      tags: true
+      condition: $TRAVIS_TAG =~ ^v?([0-9]+\.[0-9]+\.[0-9]+)$
+
+  # classic alpha/betas
+  - provider: script
+    script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.2 -p 26753
+    on:
+      tags: true
+      condition: $TRAVIS_TAG =~ ^v?([0-9]+\.[0-9]+\.[0-9]+)-([A-Za-z]+)([0-9]*)$
+
+branches:
+  only:
+  # vX.Y.Z
+  # vX.Y.Z-tag
+  # vX.Y.Z-tag1
+  - /^v?([0-9]+\.[0-9]+\.[0-9]+)(?:-([A-Za-z]+)([0-9]*))?$/
