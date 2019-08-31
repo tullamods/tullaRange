@@ -1,5 +1,9 @@
 package-as: tullaRange
 
+manual-changelog:
+    filename: changelog.md
+    markup-type: markdown
+
 move-folders:
   tullaRange/tullaRange: tullaRange
   tullaRange/tullaRange_Config: tullaRange_Config

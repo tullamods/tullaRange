@@ -2,8 +2,6 @@
 ## Title: tullaRange
 ## Author: Tuller
 ## Notes: Out of range coloring based on RedRange
-## X-Curse-Project-ID: 26753
-## X-WoWI-ID: 15636
-## Version: 8.2.1
+## Version: @project-version@
 ## SavedVariables: TULLARANGE_COLORS
 tullaRange.lua
