@@ -12,14 +12,14 @@ deploy:
     script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753 -w 15636
     on:
       tags: true
-      condition: $TRAVIS_TAG =~ /^v?\d+\.\d+\.\d+$/
+      condition: $TRAVIS_TAG =~ ^v?(\d+\.\d+\.\d+)$
 
   # prerelease versions go only to curse
   - provider: script
     script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753
     on:
       tags: true
-      condition: $TRAVIS_TAG =~ /^v?\d+\.\d+\.\d+\-\w+$/
+      condition: $TRAVIS_TAG =~ ^v?(\d+\.\d+\.\d+)-(\w+)$
 
 on:
   tags: true
