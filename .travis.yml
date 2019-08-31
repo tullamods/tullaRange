@@ -7,17 +7,19 @@ addons:
       - pandoc
 
 deploy:
-  # deploy develop to the staging environment
+  # releases go to both wowi and curse
   - provider: script
     script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753 -w 15636
     on:
-      branch: /^v?\d+\.\d+\.\d+$/
+      tags: true
+      condition: $TRAVIS_TAG =~ /^v?\d+\.\d+\.\d+$/
 
-  # deploy master to production
+  # prerelease versions go only to curse
   - provider: script
     script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753
     on:
-      branch: /^v?\d+\.\d+\.\d+\.\w+$/
+      tags: true
+      condition: $TRAVIS_TAG =~ /^v?\d+\.\d+\.\d+\.\w+$/
 
 on:
   tags: true
