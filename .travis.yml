@@ -4,16 +4,20 @@ language: bash
 addons:
   apt:
     packages:
-    - pandoc
+      - pandoc
 
 deploy:
-  # release builds
-  provider: script
-  script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753 -w 15636
-  on:
-    branch: /^v?\d+\.\d+\.\d+?$/
-  # prerelease builds (don't push to wowi)
-  provider: script
-  script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753
-  on:
-    branch: /^v?\d+\.\d+(\.\d+)?(-\w+)?$/
+  # deploy develop to the staging environment
+  - provider: script
+    script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753 -w 15636
+    on:
+      branch: /^v?\d+\.\d+\.\d+$/
+
+  # deploy master to production
+  - provider: script
+    script: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 26753
+    on:
+      branch: /^v?\d+\.\d+\.\d+\.\w+$/
+
+on:
+  tags: true
