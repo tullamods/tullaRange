@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 8.2.5
+
+* Updated TOC for 8.2.5
+
 ## 8.2.2
 
 * Added classic build
