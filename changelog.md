@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 8.2.7
+
+* Use a C_Timer.After handler for updates
+
 ## 8.2.6
 
 * Update classic TOC for 1.13.2
