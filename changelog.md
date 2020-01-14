@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 8.3.0
+
+* Update for WoW 8.3.0
+
 ## 8.2.7
 
 * Use a C_Timer.After handler for updates
