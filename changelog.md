@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 8.3.1
+
+* Increase performance a bit by only updating attack actions and actions with a range
+
 ## 8.3.0
 
 * Update for WoW 8.3.0
