@@ -1,5 +1,10 @@
 # tullaRange release notes
 
+## 8.3.2
+
+* Added support for pet action buttons. You can disable this via `/run tullaRange:SetEnablePetActions(false)`
+* Replaced the attack flash animation with a smoother one. You can disable this via `/run tullaRange:SetEnableFlashAnimations(false)`
+
 ## 8.3.1
 
 * Increase performance a bit by only updating attack actions and actions with a range
