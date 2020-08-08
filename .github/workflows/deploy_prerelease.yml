@@ -21,9 +21,6 @@ jobs:
       CF_API_KEY: ${{ secrets.CF_API_KEY }}
       WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
       GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
-      WOW_CLASSIC_VERSION: ${{ secrets.WOW_CLASSIC_VERSION }}
-      CF_PROJECT_ID: 26753
-      WOWI_PROJECT_ID: 23158
 
     # "steps" holds a list of all the steps needed to package and release our AddOn
     steps:
@@ -36,11 +33,11 @@ jobs:
       - name: Package and release
         uses: BigWigsMods/packager@master
         with:
-          args: -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID
+          args: -p 26753 -w 23158
 
       # another example where we supply additional arguments, this example is specifically to release
       # for the Classic version of the game
       - name: Package and release for Classic
         uses: BigWigsMods/packager@master
         with:
-          args: -g $WOW_CLASSIC_VERSION -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID
+          args: -g 1.13.5 -p 26753 -w 23158
