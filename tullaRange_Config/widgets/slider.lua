@@ -5,20 +5,19 @@
 local _, Addon = ...
 local Slider = Addon.Classy:New('Slider')
 Addon.Slider = Slider
- --
 
---[[ Constructor ]] function Slider:New(name, parent, low, high, step)
+function Slider:New(name, parent, low, high, step)
     local f = self:Bind(CreateFrame('Slider', parent:GetName() .. '_' .. name, parent, 'OptionsSliderTemplate'))
     f:SetMinMaxValues(low, high)
     f:SetValueStep(step)
     f:EnableMouseWheel(true)
 
-    _G[f:GetName() .. 'Text']:SetText(name)
-    _G[f:GetName() .. 'Text']:SetFontObject('GameFontNormalLeft')
-    _G[f:GetName() .. 'Text']:ClearAllPoints()
-    _G[f:GetName() .. 'Text']:SetPoint('BOTTOMLEFT', f, 'TOPLEFT')
-    _G[f:GetName() .. 'Low']:SetText('')
-    _G[f:GetName() .. 'High']:SetText('')
+    f.Text:SetText(name)
+    f.Text:SetFontObject('GameFontNormalLeft')
+    f.Text:ClearAllPoints()
+    f.Text:SetPoint('BOTTOMLEFT', f, 'TOPLEFT')
+    f.Low:SetText('')
+    f.High:SetText('')
 
     local text = f:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightSmall')
     text:SetJustifyH('RIGHT')
@@ -34,9 +33,8 @@ Addon.Slider = Slider
 
     return f
 end
- --
 
---[[ Frame Events ]] function Slider:OnShow()
+function Slider:OnShow()
     self:UpdateValue()
 end
 

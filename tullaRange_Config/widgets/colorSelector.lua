@@ -8,23 +8,10 @@ local tullaRange = _G.tullaRange
 local ColorSelector = Addon.Classy:New('Frame')
 Addon.ColorSelector = ColorSelector
 
-local backdrop = {
-    bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
-    edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
-    edgeSize = 16,
-    tile = true,
-    tileSize = 16,
-    insets = {left = 4, right = 4, top = 4, bottom = 4}
-}
-
 local ColorSliders = {'Red', 'Green', 'Blue'}
 
 function ColorSelector:New(colorState, parent)
     local f = self:Bind(CreateFrame('Frame', parent:GetName() .. '_' .. colorState, parent))
-
-    f:SetBackdrop(backdrop)
-    f:SetBackdropBorderColor(0.4, 0.4, 0.4)
-    f:SetBackdropColor(0, 0, 0, 0.3)
 
     local t = f:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightLarge')
     t:SetPoint('BOTTOMLEFT', f, 'TOPLEFT', 4, 2)

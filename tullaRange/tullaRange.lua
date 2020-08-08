@@ -88,122 +88,144 @@ end
 
 -- when the player first logs in...
 function Addon:PLAYER_LOGIN(event)
-    local function actionButton_OnVisibilityChanged(button)
+    local function button_StartFlash(button)
+        if button:IsVisible() then
+            self:StartButtonFlashing(button)
+        end
+    end
+
+    local function actionButton_OnShowHide(button)
         self:UpdateActionButtonWatched(button)
         self:UpdateButtonFlashing(button)
     end
 
-    local function petActionButton_OnVisibilityChanged(button)
-        self:UpdatePetActionButtonWatched(button)
-        self:UpdateButtonFlashing(button)
+    local function actionButton_Update(button)
+        self:UpdateActionButtonWatched(button)
     end
 
-    -- hook any action button events we need to take care of
-    -- register events on update initially, and wipe out their individual on
-    -- update handlers. This is why tullaRange has a negative performance
-    -- impact
-    hooksecurefunc(
-        'ActionButton_OnUpdate',
-        function(button)
+    local function actionButton_UpdateUsable(button)
+        self:UpdateActionButtonState(button, true)
+    end
+
+
+
+    -- register existing action buttons
+    -- the method varies between classic and shadowlands, as action buttons in
+    -- shadowlands use ActionBarActionButtonMixin
+    local ActionBarActionButtonMixin = _G.ActionBarActionButtonMixin
+    if ActionBarActionButtonMixin then
+        local function actionButton_OnLoad(button)
+            button:SetScript("OnUpdate", nil)
+            button:HookScript('OnShow', actionButton_OnShowHide)
+            button:HookScript('OnHide', actionButton_OnShowHide)
+
+            -- Update is called whenever an action button changes, so we
+            -- check here to we if we need to pay attention to the button anymore
+            hooksecurefunc(button, 'Update', actionButton_Update)
+
+            -- UpdateUsable is called when the button normally changes
+            -- color when unusuable, so we need to reapply our custom coloring
+            hooksecurefunc(button, 'UpdateUsable', actionButton_UpdateUsable)
+
+            if self:EnableFlashAnimations() then
+                hooksecurefunc(button, 'StartFlash', button_StartFlash)
+            end
+
+            self:UpdateActionButtonWatched(button)
+        end
+
+        -- hook any existing frames that are derived from ActionBarActionButtonMixin
+        local mixin_OnLoad = ActionBarActionButtonMixin.OnLoad
+        local EnumerateFrames = _G.EnumerateFrames
+        local f = EnumerateFrames()
+
+        while f do
+            if f.OnLoad == mixin_OnLoad then
+                actionButton_OnLoad(f)
+            end
+
+            f = EnumerateFrames(f)
+        end
+
+        -- grab later ones, too
+        hooksecurefunc(ActionBarActionButtonMixin, "OnLoad", actionButton_OnLoad)
+    else
+        local function actionButton_OnUpdate(button)
             button:SetScript('OnUpdate', nil)
-            button:HookScript('OnShow', actionButton_OnVisibilityChanged)
-            button:HookScript('OnHide', actionButton_OnVisibilityChanged)
+            button:HookScript('OnShow', actionButton_OnShowHide)
+            button:HookScript('OnHide', actionButton_OnShowHide)
 
             self:UpdateActionButtonWatched(button)
         end
-    )
 
-    -- ActionButton_UpdateUsable is called when the button normally changes
-    -- color when unusuable, so we need to reapply our custom coloring at this
-    -- point
-    hooksecurefunc(
-        'ActionButton_UpdateUsable',
-        function(button)
-            self:UpdateActionButtonState(button, true)
+        -- hook any action button events we need to take care of
+        -- register events on update initially, and wipe out their individual on
+        -- update handlers. This is why tullaRange has a negative performance
+        -- impact
+        hooksecurefunc('ActionButton_OnUpdate', actionButton_OnUpdate)
+
+        -- ActionButton_UpdateUsable is called when the button normally changes
+        -- color when unusuable, so we need to reapply our custom coloring at this
+        -- point
+        hooksecurefunc('ActionButton_UpdateUsable', actionButton_UpdateUsable)
+
+        -- ActionButton_Update is called whenever an action button changes, so we
+        -- check here to we if we need to pay attention to the button anymore or not
+        hooksecurefunc('ActionButton_Update', actionButton_Update)
+
+        -- setup flash animations
+        if self:EnableFlashAnimations() then
+            hooksecurefunc('ActionButton_StartFlash', button_StartFlash)
         end
-    )
+    end
 
-    -- ActionButton_Update is called whenever an action button changes, so we
-    -- check here to we if we need to pay attention to the button anymore or not
-    hooksecurefunc(
-        'ActionButton_Update',
-        function(button)
-            self:UpdateActionButtonWatched(button)
-        end
-    )
-
-    -- check to see if we're coloring pet actions
+    -- register pet actions, if we want to
     if self:EnablePetActions() then
+        -- register all pet action slots
         self.petActions = {}
+
         for i = 1, NUM_PET_ACTION_SLOTS do
             tinsert(self.petActions, _G['PetActionButton' .. i])
         end
 
+        local function petButton_OnShowHide(button)
+            self:UpdatePetActionButtonWatched(button)
+            self:UpdateButtonFlashing(button)
+        end
+
+        local function petButton_OnUpdate(button)
+            button:SetScript('OnUpdate', nil)
+            button:HookScript('OnShow', petButton_OnShowHide)
+            button:HookScript('OnHide', petButton_OnShowHide)
+            self:UpdatePetActionButtonWatched(button)
+        end
+
+        local function petActionBar_Update(bar)
+            -- reset the timer on update, so that we don't trigger the bar's
+            -- own range updater code
+            bar.rangeTimer = nil
+
+            -- if we have a bar, update all the actions
+            if PetHasActionBar() then
+                for _, button in pairs(self.petActions) do
+                    -- clear our current styling
+                    self.buttonStates[button] = nil
+                    self:UpdatePetActionButtonWatched(button)
+                end
+            -- if we don't, wipe any actions we currently are showing
+            else
+                wipe(self.watchedPetActions)
+            end
+        end
+
         -- hook any pet button events we need to take care of
         -- register events on update initially, and wipe out their individual on
-        -- update handlers. This is why tullaRange has a negative performance
-        -- impact
-        hooksecurefunc(
-            'PetActionButton_OnUpdate',
-            function(button)
-                button:SetScript('OnUpdate', nil)
-                button:HookScript('OnShow', petActionButton_OnVisibilityChanged)
-                button:HookScript('OnHide', petActionButton_OnVisibilityChanged)
-                self:UpdatePetActionButtonWatched(button)
-            end
-        )
+        -- update handlers.
+        hooksecurefunc('PetActionButton_OnUpdate', petButton_OnUpdate)
+        hooksecurefunc('PetActionBar_Update', petActionBar_Update)
 
-        hooksecurefunc(
-            'PetActionBar_Update',
-            function(bar)
-                -- reset the timer on update, so that we don't trigger the bar's
-                -- own range updater code
-                bar.rangeTimer = nil
-
-                -- if we have a bar, update all the actions
-                if PetHasActionBar() then
-                    for _, button in pairs(self.petActions) do
-                        -- clear our current styling
-                        self.buttonStates[button] = nil
-                        self:UpdatePetActionButtonWatched(button)
-                    end
-                -- if we don't, wipe any actions we currently are showing
-                else
-                    wipe(self.watchedPetActions)
-                end
-            end
-        )
-    end
-
-    -- we've enabled flash animations, hook the stuff we need to
-    if self:EnableFlashAnimations() then
-        -- a table for all of the flash animations we may create
-        self.flashAnimations = {}
-
-        -- hook stop/start flashing functions
-        -- we use animations for this instead of on update handlers
-        hooksecurefunc(
-            'ActionButton_StartFlash',
-            function(button)
-                if not button:IsVisible() then
-                    return
-                end
-
-                self:StartButtonFlashing(button)
-            end
-        )
-
-        if self:EnablePetActions() then
-            hooksecurefunc(
-                'PetActionButton_StartFlash',
-                function(button)
-                    if not button:IsVisible() then
-                        return
-                    end
-
-                    self:StartButtonFlashing(button)
-                end
-            )
+        if self:EnableFlashAnimations() then
+            hooksecurefunc('PetActionButton_StartFlash', button_StartFlash)
         end
     end
 
@@ -362,7 +384,7 @@ local function alpha_OnFinished(self)
 end
 
 function Addon:StartButtonFlashing(button)
-    local animation = self.flashAnimations[button]
+    local animation = self.flashAnimations and self.flashAnimations[button]
 
     if not animation then
         animation = button.Flash:CreateAnimationGroup()
@@ -377,7 +399,11 @@ function Addon:StartButtonFlashing(button)
 
         alpha.owner = button
 
-        self.flashAnimations[button] = animation
+        if self.flashAnimations then
+            self.flashAnimations[button] = animation
+        else
+            self.flashAnimations = { [button] = animation }
+        end
     end
 
     button.Flash:Show()
@@ -385,7 +411,7 @@ function Addon:StartButtonFlashing(button)
 end
 
 function Addon:StopButtonFlashing(button)
-    local animation = self.flashAnimations[button]
+    local animation = self.flashAnimations and self.flashAnimations[button]
 
     if animation then
         animation:Stop()
