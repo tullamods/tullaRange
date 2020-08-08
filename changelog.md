@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 9.0.0
+
+* Updated for World of Warcraft 9.0.1 - Shadowlands
+
 ## 8.3.2
 
 * Added support for pet action buttons. You can disable this via `/run tullaRange:SetEnablePetActions(false)`
