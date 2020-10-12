@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 9.0.1
+
+* Fix a nil value exception when moving pet actions
+
 ## 9.0.0
 
 * Updated for World of Warcraft 9.0.1 - Shadowlands
