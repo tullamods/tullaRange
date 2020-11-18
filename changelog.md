@@ -38,6 +38,10 @@
 
 * Added classic build
 
+## 9.0.2
+
+* Updated TOC for 9.0.2
+
 ## 8.2.1
 
 * Automated releases
