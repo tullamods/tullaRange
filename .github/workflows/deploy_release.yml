@@ -22,27 +22,20 @@ jobs:
     env:
       CF_API_KEY: ${{ secrets.CF_API_KEY }}
       WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
       GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
-      WOW_CLASSIC_VERSION: ${{ secrets.WOW_CLASSIC_VERSION }}
-      CF_PROJECT_ID: 26753
-      WOWI_PROJECT_ID: 15636
 
     # "steps" holds a list of all the steps needed to package and release our AddOn
     steps:
-
-      # we first have to clone the AddOn project, which is simple enough, and is a required step
       - name: Clone project
         uses: actions/checkout@v2
 
-      # once cloned, we just run the GitHub Action for the packager project
       - name: Package and release
         uses: BigWigsMods/packager@master
         with:
-          args: -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID
+          args: -p 26753 -w 15636 -a VBNBwg6x
 
-      # another example where we supply additional arguments, this example is specifically to release
-      # for the Classic version of the game
       - name: Package and release for Classic
         uses: BigWigsMods/packager@master
         with:
-          args: -g $WOW_CLASSIC_VERSION -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID
+          args: -g classic -p 26753 -w 15636 -a VBNBwg6x
