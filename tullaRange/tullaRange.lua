@@ -24,6 +24,11 @@ local IsActionInRange = _G.IsActionInRange
 local IsUsableAction = _G.IsUsableAction
 local GetPetActionInfo = _G.GetPetActionInfo
 local GetPetActionSlotUsable = _G.GetPetActionSlotUsable
+local GetActionInfo = _G.GetActionInfo
+local GetMacroInfo = _G.GetMacroInfo
+local GetMacroSpell = _G.GetMacroSpell
+local GetSpellPowerCost = _G.GetSpellPowerCost
+local UnitPower = _G.UnitPower
 
 --------------------------------------------------------------------------------
 -- Event Handlers
@@ -300,11 +305,41 @@ end
 -- gets the current state of the action button
 function Addon:GetActionButtonState(button)
     local action = button.action
+    local actionType, id, _ = GetActionInfo(action)
     local isUsable, notEnoughMana = IsUsableAction(action)
     local inRange = IsActionInRange(action)
+    local stanceMacro = false
 
+    if actionType == "macro" then
+        local name, _, _, _ = GetMacroInfo(id)
+        stanceMacro = name:find("^#") ~= nil
+    end
+
+    if stanceMacro then
+        local macroSpellId = GetMacroSpell(id)
+        if macroSpellId == nil then
+            return 'normal'
+        end
+
+        local costs = GetSpellPowerCost(macroSpellId)
+
+        notEnoughMana = false
+        for _, cost in ipairs(costs) do
+            if UnitPower("player", cost['type']) < cost['minCost'] then
+                notEnoughMana = true
+                break
+            end
+        end
+
+        if notEnoughMana then
+            return 'oom'
+        elseif inRange == false then
+            return 'oor'
+        else
+            return 'normal'
+        end
     -- usable (ignoring target information)
-    if isUsable then
+    elseif isUsable then
         -- but out of range
         if inRange == false then
             return 'oor'
