@@ -28,12 +28,7 @@ jobs:
       - name: Clone project
         uses: actions/checkout@v2
 
-      # once cloned, we just run the GitHub Action for the packager project
-      - name: Package and release
-        uses: BigWigsMods/packager@master
-        with:
-          args: -p 26753 -w 23158 -a VBNBwg6x
-
+      # package various release flavors
       - name: Package and release for Classic
         uses: BigWigsMods/packager@master
         with:
@@ -42,4 +37,9 @@ jobs:
       - name: Package and release for Burning Crusade Classic
         uses: BigWigsMods/packager@master
         with:
-          args: -g bc -p 26753 -w 23158 -a VBNBwg6x
+          args: -g bcc -p 26753 -w 23158 -a VBNBwg6x
+
+      - name: Package and release
+        uses: BigWigsMods/packager@master
+        with:
+          args: -p 26753 -w 23158 -a VBNBwg6x

@@ -1,7 +1,6 @@
 ## Interface: 90005
-## Interface-Retail: 90005
-## Interface-Classic: 11306
-## Interface-BC: 20501
+## Interface-BCC: 20501
+## Interface-Classic: 11307
 ## Title: tullaRange Config
 ## Notes: GUI based configuration for tullaRange
 ## Author: Tuller
