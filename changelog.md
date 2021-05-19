@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 9.0.4
+
+* Add Burning Crusade Classic support
+
 ## 9.0.3
 
 * If you create a macro with a name that starts with #, tullaRange will now use spell cost checks to determine if the ability is usable (thanks merijn)
