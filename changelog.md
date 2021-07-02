@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 9.1.0
+
+* Updated TOC files for 9.1.0
+
 ## 9.0.4
 
 * Add Burning Crusade Classic support
