@@ -1,6 +1,6 @@
-## Interface: 90100
-## Interface-BCC: 20501
-## Interface-Classic: 11307
+## Interface: 90105
+## Interface-BCC: 20502
+## Interface-Classic: 11401
 ## Title: tullaRange
 ## Author: Tuller
 ## Notes: Out of range coloring based on RedRange

@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 9.1.1
+
+* Updated TOC files
+
 ## 9.1.0
 
 * Updated TOC files for 9.1.0
