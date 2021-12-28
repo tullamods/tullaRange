@@ -31,17 +31,17 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Package and release for Classic
-        uses: BigWigsMods/packager@master
+        uses: BigWigsMods/packager@v1
         with:
           args: -g classic -p 26753 -w 15636 -a VBNBwg6x
 
       - name: Package and release for Burning Crusade Classic
-        uses: BigWigsMods/packager@master
+        uses: BigWigsMods/packager@v1
         with:
           args: -g bcc -p 26753 -w 15636 -a VBNBwg6x
 
       - name: Package and release
-        uses: BigWigsMods/packager@master
+        uses: BigWigsMods/packager@v1
         with:
           args: -p 26753 -w 15636 -a VBNBwg6x
 
