@@ -1,5 +1,10 @@
 # tullaRange release notes
 
+## 9.2.0
+
+* Updated TOC files for 9.2.0, 2.5.3, and 1.14.2.
+* Packaged the addon using multiple TOC files
+
 ## 9.1.1
 
 * Updated TOC files

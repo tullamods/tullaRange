@@ -28,18 +28,7 @@ jobs:
       - name: Clone project
         uses: actions/checkout@v2
 
-      # package various release flavors
-      - name: Package and release for Classic
-        uses: BigWigsMods/packager@v1
-        with:
-          args: -g classic -p 26753 -w 23158 -a VBNBwg6x
-
-      - name: Package and release for Burning Crusade Classic
-        uses: BigWigsMods/packager@v1
-        with:
-          args: -g bcc -p 26753 -w 23158 -a VBNBwg6x
-
       - name: Package and release
-        uses: BigWigsMods/packager@v1
+        uses: BigWigsMods/packager@v2
         with:
-          args: -p 26753 -w 23158 -a VBNBwg6x
+          args: -S -p 26753 -w 23158 -a VBNBwg6x
