@@ -6,7 +6,7 @@
 local AddonName = ...
 
 -- the addon event handler
-local Addon = CreateFrame('Frame', AddonName, _G.InterfaceOptionsFrame)
+local Addon = CreateFrame('Frame', AddonName, SettingsPanel or InterfaceOptionsFrame)
 
 -- how quickly attack actions flash
 local ATTACK_BUTTON_FLASH_TIME = _G.ATTACK_BUTTON_FLASH_TIME
@@ -61,6 +61,8 @@ end
 -- addon shown (which in this case means that InterfaceOptionsFrame was shown)
 -- load the config addon and get rid of this method
 function Addon:OnShow()
+    print(AddonName, 'OnShow')
+
     LoadAddOn(AddonName .. '_Config')
 
     -- drop this method, as we won't need it again
@@ -227,11 +229,28 @@ function Addon:PLAYER_LOGIN(event)
         -- hook any pet button events we need to take care of
         -- register events on update initially, and wipe out their individual on
         -- update handlers.
-        hooksecurefunc('PetActionButton_OnUpdate', petButton_OnUpdate)
-        hooksecurefunc('PetActionBar_Update', petActionBar_Update)
 
-        if self:EnableFlashAnimations() then
-            hooksecurefunc('PetActionButton_StartFlash', button_StartFlash)
+
+        local PetActionBar = _G.PetActionBar
+        if type(PetActionBar) == "table" then
+            if type(PetActionBar.Update) == "function" then
+                hooksecurefunc(PetActionBar, 'Update', petActionBar_Update)
+            end
+
+            local buttons = PetActionBar.actionButtons
+            if type(buttons) == "table" then
+                for _, button in pairs(PetActionBar.actionButtons) do
+                    hooksecurefunc(button, 'OnUpdate', petButton_OnUpdate)
+                    hooksecurefunc(button, 'StartFlash', button_StartFlash)
+                end
+            end
+        else
+            hooksecurefunc('PetActionButton_OnUpdate', petButton_OnUpdate)
+            hooksecurefunc('PetActionBar_Update', petActionBar_Update)
+
+            if self:EnableFlashAnimations() then
+                hooksecurefunc('PetActionButton_StartFlash', button_StartFlash)
+            end
         end
     end
 
