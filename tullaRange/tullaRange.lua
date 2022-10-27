@@ -61,8 +61,6 @@ end
 -- addon shown (which in this case means that InterfaceOptionsFrame was shown)
 -- load the config addon and get rid of this method
 function Addon:OnShow()
-    print(AddonName, 'OnShow')
-
     LoadAddOn(AddonName .. '_Config')
 
     -- drop this method, as we won't need it again
