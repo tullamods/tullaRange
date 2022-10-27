@@ -1,6 +1,6 @@
 # tullaRange release notes
 
-## 9.2.1
+## 10.0.1
 
 * Add support for 10.0.0
 
