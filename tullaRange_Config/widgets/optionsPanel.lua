@@ -28,7 +28,7 @@ function OptionsPanel:New(name, parent, title, subtitle, icon)
     subtext:SetText(subtitle)
 
     local Settings = _G.Settings
-    if type(Settings) == "table" and Settings.RegisterCanvasLayoutCategory then
+    if type(Settings) == "table" and type(Settings.RegisterCanvasLayoutCategory) == "function" then
         local category = Settings.RegisterCanvasLayoutCategory(frame, frame.name, frame.name)
 
         category.ID = frame.name

@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.0.2
+
+* Improve check for new Settings UI
+
 ## 10.0.1
 
 * Add support for 10.0.0
