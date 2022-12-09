@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.0.4
+
+* Desaturate when recoloring abilities (thanks to Guema)
+
 ## 10.0.3
 
 * Updated TOC files for 10.0.2
