@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.0.5
+
+* No longer desaturating when unusable, just out of range or out of mana
+
 ## 10.0.4
 
 * Desaturate when recoloring abilities (thanks to Guema)
