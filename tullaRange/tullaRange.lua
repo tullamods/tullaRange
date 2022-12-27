@@ -29,10 +29,10 @@ local LoadAddOn = _G.LoadAddOn
 local DB_KEY = "TULLARANGE_COLORS"
 
 -- how frequently we want to update colors, in seconds
-local UPDATE_DELAY = 1/60
+local UPDATE_DELAY = 1/30
 
 -- the addon event handler
-local Addon = CreateFrame("Frame", AddonName, SettingsPanel or InterfaceOptionsFrame)
+local Addon = CreateFrame("Frame", AddonName, UIParent)
 
 --------------------------------------------------------------------------------
 -- Saved settings setup stuff
@@ -98,29 +98,24 @@ function Addon:OnLoad()
 	self.buttonStates = {}
 
 	-- setup script handlers
-	-- create new frame to load separately from the UI frame
-	local updateFrame = CreateFrame("Frame", nil, UIParent)
-	updateFrame:SetScript("OnUpdate", self.HandleUpdate)
-	self:SetScript("OnShow", self.OnShow)
 	self:SetScript("OnEvent", self.OnEvent)
+	self:SetScript("OnUpdate", self.OnUpdate)
 
 	-- register any events we need to watch
 	self:RegisterEvent("ADDON_LOADED")
 	self:RegisterEvent("PLAYER_LOGIN")
 	self:RegisterEvent("PLAYER_LOGOUT")
 
+	-- watch for the options menu to be shown, load and the options UI when it does
+	local optionsFrameWatcher = CreateFrame("Frame", nil, SettingsPanel or InterfaceOptionsFrame)
+	optionsFrameWatcher:SetScript("OnShow", function(watcher)
+		LoadAddOn(AddonName .. "_Config")
+
+		watcher:SetScript("OnShow", nil)
+	end)
+
 	-- drop this method, as we won't need it again
 	self.OnLoad = nil
-end
-
--- addon shown (which in this case means that InterfaceOptionsFrame was shown)
--- load the config addon and get rid of this method
-function Addon:OnShow()
-	LoadAddOn(AddonName .. "_Config")
-
-	-- drop this method, as we won't need it again
-	self:SetScript("OnShow", nil)
-	self.OnShow = nil
 end
 
 function Addon:OnEvent(event, ...)
@@ -155,8 +150,9 @@ end
 -- use this function when performance is not critical
 function Addon:SetButtonState(button, state)
 	self.buttonStates[button] = state
-	button.icon:SetDesaturated(state == "oom" or state == "oor")
+
 	local color = self.sets[state]
+	button.icon:SetDesaturated(state == "oom" or state == "oor")
 	button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 end
 
@@ -391,10 +387,9 @@ local spellId
 local debounce
 local isUsable, notEnoughMana
 local state
-
 local delta = 0
 
-function Addon:HandleUpdate(elapsed)
+function Addon:OnUpdate(elapsed)
 	if delta >= UPDATE_DELAY then
 		delta = elapsed
 	else
@@ -402,14 +397,14 @@ function Addon:HandleUpdate(elapsed)
 		return
 	end
 
-	for button in pairs(Addon.watchedActions) do
+	for button in pairs(self.watchedActions) do
 		actionType, actionTypeId = GetActionInfo(button.action)
 
 		if not actionType then
-			if Addon.buttonStates[button] ~= "normal" then
-				Addon.buttonStates[button] = "normal"
+			if self.buttonStates[button] ~= "normal" then
+				self.buttonStates[button] = "normal"
 				button.icon:SetDesaturated(false)
-				color = Addon.sets["normal"]
+				color = self.sets["normal"]
 				button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 			end
 		elseif actionType == "macro" then
@@ -427,10 +422,11 @@ function Addon:HandleUpdate(elapsed)
 
 					for _, cost in ipairs(GetSpellPowerCost(spellId)) do
 						if UnitPower("player", cost.type) < cost.minCost then
-							if Addon.buttonStates[button] ~= "oom" then
-								Addon.buttonStates[button] = "oom"
+							if self.buttonStates[button] ~= "oom" then
+								self.buttonStates[button] = "oom"
+
+								color = self.sets["oom"]
 								button.icon:SetDesaturated(true)
-								color = Addon.sets["oom"]
 								button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 							end
 
@@ -440,17 +436,19 @@ function Addon:HandleUpdate(elapsed)
 
 					if debounce then
 						if IsActionInRange(button.action) == false then
-							if Addon.buttonStates[button] ~= "oor" then
-								Addon.buttonStates[button] = "oor"
+							if self.buttonStates[button] ~= "oor" then
+								self.buttonStates[button] = "oor"
+
+								color = self.sets["oor"]
 								button.icon:SetDesaturated(true)
-								color = Addon.sets["oor"]
 								button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 							end
 						else
-							if Addon.buttonStates[button] ~= "normal" then
-								Addon.buttonStates[button] = "normal"
+							if self.buttonStates[button] ~= "normal" then
+								self.buttonStates[button] = "normal"
+
+								color = self.sets["normal"]
 								button.icon:SetDesaturated(false)
-								color = Addon.sets["normal"]
 								button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 							end
 						end
@@ -462,17 +460,19 @@ function Addon:HandleUpdate(elapsed)
 
 			if not isUsable then
 				if notEnoughMana then
-					if Addon.buttonStates[button] ~= "oom" then
-						Addon.buttonStates[button] = "oom"
+					if self.buttonStates[button] ~= "oom" then
+						self.buttonStates[button] = "oom"
+
+						color = self.sets["oom"]
 						button.icon:SetDesaturated(true)
-						color = Addon.sets["oom"]
 						button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 					end
 				else
-					if Addon.buttonStates[button] ~= "unusable" then
-						Addon.buttonStates[button] = "unusable"
+					if self.buttonStates[button] ~= "unusable" then
+						self.buttonStates[button] = "unusable"
+
+						color = self.sets["unusable"]
 						button.icon:SetDesaturated(false)
-						color = Addon.sets["unusable"]
 						button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 					end
 				end
@@ -480,24 +480,26 @@ function Addon:HandleUpdate(elapsed)
 				-- we do == false here because IsActionInRange can return one of true
 				-- (has range, in range), false (has range, out of range), and nil (does
 				-- not have range) and we explicitly want to know about (has range, oor)
-				if Addon.buttonStates[button] ~= "oor" then
-					Addon.buttonStates[button] = "oor"
+				if self.buttonStates[button] ~= "oor" then
+					self.buttonStates[button] = "oor"
+
+					color = self.sets["oor"]
 					button.icon:SetDesaturated(true)
-					color = Addon.sets["oor"]
 					button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 				end
 			else
-				if Addon.buttonStates[button] ~= "normal" then
-					Addon.buttonStates[button] = "normal"
+				if self.buttonStates[button] ~= "normal" then
+					self.buttonStates[button] = "normal"
+
+					color = self.sets["normal"]
 					button.icon:SetDesaturated(false)
-					color = Addon.sets["normal"]
 					button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 				end
 			end
 		end
 	end
 
-	for button in pairs(Addon.watchedPetActions) do
+	for button in pairs(self.watchedPetActions) do
 		-- pet action button specific stuff
 		local slot = button:GetID() or 0
 		local _, _, _, _, _, _, _, checksRange, inRange = GetPetActionInfo(slot)
@@ -517,10 +519,11 @@ function Addon:HandleUpdate(elapsed)
 			state = "unusable"
 		end
 
-		if Addon.buttonStates[button] ~= state then
-			Addon.buttonStates[button] = state
+		if self.buttonStates[button] ~= state then
+			self.buttonStates[button] = state
+
+			color = self.sets[state]
 			button.icon:SetDesaturated(state == "oom" or state == "oor")
-			color = Addon.sets[state]
 			button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 		end
 	end
