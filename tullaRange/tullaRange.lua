@@ -13,6 +13,17 @@ local DB_KEY = "TULLARANGE_COLORS"
 -- how frequently we want to update colors, in seconds
 local UPDATE_DELAY = 1/30
 
+-- frequently used globals
+local GetActionInfo = GetActionInfo
+local GetMacroInfo = GetMacroInfo
+local GetMacroSpell = GetMacroSpell
+local GetPetActionInfo = GetPetActionInfo
+local GetPetActionSlotUsable = GetPetActionSlotUsable
+local GetSpellPowerCost = GetSpellPowerCost
+local IsActionInRange = IsActionInRange
+local IsUsableAction = IsUsableAction
+local UnitPower = UnitPower
+
 -- the addon event handler
 local Addon = CreateFrame("Frame", AddonName, UIParent)
 
@@ -57,10 +68,10 @@ function Addon:GetDatabaseDefaults()
 		flashDuration = ATTACK_BUTTON_FLASH_TIME * 1.5,
 
 		-- default colors (r, g, b, a)
-		normal = {1, 1, 1, 1},
-		oor = {1, 0.3, 0.1, 1},
-		oom = {0.1, 0.3, 1, 1},
-		unusable = {0.4, 0.4, 0.4, 1}
+		normal = {1, 1, 1, 1, desaturate = false},
+		oor = {1, 0.3, 0.1, 1, desaturate = true},
+		oom = {0.1, 0.3, 1, 1, desaturate = true},
+		unusable = {0.4, 0.4, 0.4, 1, desaturate = false}
 	}
 end
 
@@ -134,7 +145,7 @@ function Addon:SetButtonState(button, state)
 	self.buttonStates[button] = state
 
 	local color = self.sets[state]
-	button.icon:SetDesaturated(state == "oom" or state == "oor")
+	button.icon:SetDesaturated(color.desaturate)
 	button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 end
 
@@ -364,16 +375,6 @@ end
 --------------------------------------------------------------------------------
 
 -- globals used in OnUpdate
-local GetActionInfo = GetActionInfo
-local GetMacroInfo = GetMacroInfo
-local GetMacroSpell = GetMacroSpell
-local GetPetActionInfo = GetPetActionInfo
-local GetPetActionSlotUsable = GetPetActionSlotUsable
-local GetSpellPowerCost = GetSpellPowerCost
-local IsActionInRange = IsActionInRange
-local IsUsableAction = IsUsableAction
-local UnitPower = UnitPower
-
 local delta = 0
 
 function Addon:OnUpdate(elapsed)
@@ -393,7 +394,7 @@ function Addon:OnUpdate(elapsed)
 				self.buttonStates[button] = "normal"
 
 				local color = self.sets["normal"]
-				button.icon:SetDesaturated(false)
+				button.icon:SetDesaturated(color.desaturate)
 				button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 			end
 		elseif actionType == "macro" then
@@ -421,7 +422,7 @@ function Addon:OnUpdate(elapsed)
 							self.buttonStates[button] = "oom"
 
 							local color = self.sets["oom"]
-							button.icon:SetDesaturated(true)
+							button.icon:SetDesaturated(color.desaturate)
 							button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 						end
 					else
@@ -430,7 +431,7 @@ function Addon:OnUpdate(elapsed)
 								self.buttonStates[button] = "oor"
 
 								local color = self.sets["oor"]
-								button.icon:SetDesaturated(true)
+								button.icon:SetDesaturated(color.desaturate)
 								button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 							end
 						else
@@ -438,7 +439,7 @@ function Addon:OnUpdate(elapsed)
 								self.buttonStates[button] = "normal"
 
 								local color = self.sets["normal"]
-								button.icon:SetDesaturated(false)
+								button.icon:SetDesaturated(color.desaturate)
 								button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 							end
 						end
@@ -454,7 +455,7 @@ function Addon:OnUpdate(elapsed)
 						self.buttonStates[button] = "oom"
 
 						local color = self.sets["oom"]
-						button.icon:SetDesaturated(true)
+						button.icon:SetDesaturated(color.desaturate)
 						button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 					end
 				else
@@ -462,7 +463,7 @@ function Addon:OnUpdate(elapsed)
 						self.buttonStates[button] = "unusable"
 
 						local color = self.sets["unusable"]
-						button.icon:SetDesaturated(false)
+						button.icon:SetDesaturated(color.desaturate)
 						button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 					end
 				end
@@ -482,7 +483,7 @@ function Addon:OnUpdate(elapsed)
 					self.buttonStates[button] = "normal"
 
 					local color = self.sets["normal"]
-					button.icon:SetDesaturated(false)
+					button.icon:SetDesaturated(color.desaturate)
 					button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 				end
 			end
@@ -516,7 +517,7 @@ function Addon:OnUpdate(elapsed)
 			self.buttonStates[button] = state
 
 			local color = self.sets[state]
-			button.icon:SetDesaturated(state == "oom" or state == "oor")
+			button.icon:SetDesaturated(color.desaturate)
 			button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 		end
 	end
