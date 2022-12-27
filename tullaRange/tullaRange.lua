@@ -387,17 +387,10 @@ function Addon:OnUpdate(elapsed)
 
 	-- update actions
 	for button in pairs(self.watchedActions) do
+		local state = "normal"
 		local actionType, actionTypeID = GetActionInfo(button.action)
 
-		if not actionType then
-			if self.buttonStates[button] ~= "normal" then
-				self.buttonStates[button] = "normal"
-
-				local color = self.sets["normal"]
-				button.icon:SetDesaturated(color.desaturate)
-				button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-			end
-		elseif actionType == "macro" then
+		if actionType == "macro" then
 			-- for macros with names that start with a #, we prioritize the OOM check
 			-- using a spell cost strategy over other ones to better clarify if the
 			-- macro is actually usable or not
@@ -408,85 +401,41 @@ function Addon:OnUpdate(elapsed)
 
 				-- only run the check for spell macros
 				if spellID then
-					local usable = true
-
 					for _, cost in ipairs(GetSpellPowerCost(spellID)) do
 						if UnitPower("player", cost.type) < cost.minCost then
-							usable = false
+							state = "oom"
 							break
 						end
 					end
 
-					if not usable then
-						if self.buttonStates[button] ~= "oom" then
-							self.buttonStates[button] = "oom"
-
-							local color = self.sets["oom"]
-							button.icon:SetDesaturated(color.desaturate)
-							button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-						end
-					else
-						if IsActionInRange(button.action) == false then
-							if self.buttonStates[button] ~= "oor" then
-								self.buttonStates[button] = "oor"
-
-								local color = self.sets["oor"]
-								button.icon:SetDesaturated(color.desaturate)
-								button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-							end
-						else
-							if self.buttonStates[button] ~= "normal" then
-								self.buttonStates[button] = "normal"
-
-								local color = self.sets["normal"]
-								button.icon:SetDesaturated(color.desaturate)
-								button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-							end
-						end
+					if state == "normal" and IsActionInRange(button.action) == false then
+						state = "oor"
 					end
 				end
 			end
-		else
+		elseif actionType then
 			local isUsable, notEnoughMana = IsUsableAction(button.action)
 
 			if not isUsable then
 				if notEnoughMana then
-					if self.buttonStates[button] ~= "oom" then
-						self.buttonStates[button] = "oom"
-
-						local color = self.sets["oom"]
-						button.icon:SetDesaturated(color.desaturate)
-						button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-					end
+					state = "oom"
 				else
-					if self.buttonStates[button] ~= "unusable" then
-						self.buttonStates[button] = "unusable"
-
-						local color = self.sets["unusable"]
-						button.icon:SetDesaturated(color.desaturate)
-						button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-					end
+					state = "unusable"
 				end
+			-- we do == false here because IsActionInRange can return one of true
+			-- (has range, in range), false (has range, out of range), and nil (does
+			-- not have range) and we explicitly want to know about (has range, oor)
 			elseif IsActionInRange(button.action) == false then
-				-- we do == false here because IsActionInRange can return one of true
-				-- (has range, in range), false (has range, out of range), and nil (does
-				-- not have range) and we explicitly want to know about (has range, oor)
-				if self.buttonStates[button] ~= "oor" then
-					self.buttonStates[button] = "oor"
-
-					local color = self.sets["oor"]
-					button.icon:SetDesaturated(true)
-					button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-				end
-			else
-				if self.buttonStates[button] ~= "normal" then
-					self.buttonStates[button] = "normal"
-
-					local color = self.sets["normal"]
-					button.icon:SetDesaturated(color.desaturate)
-					button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-				end
+				state = "oor"
 			end
+		end
+
+		if self.buttonStates[button] ~= state then
+			self.buttonStates[button] = state
+
+			local color = self.sets[state]
+			button.icon:SetDesaturated(color.desaturate)
+			button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
 		end
 	end
 
