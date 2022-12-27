@@ -10,8 +10,6 @@ local AddonName = ...
 -- the name of the database
 local DB_KEY = "TULLARANGE_COLORS"
 
--- how frequently we want to update colors, in seconds
-local UPDATE_DELAY = 1/30
 
 -- frequently used globals
 local GetActionInfo = GetActionInfo
@@ -25,7 +23,7 @@ local IsUsableAction = IsUsableAction
 local UnitPower = UnitPower
 
 -- the addon event handler
-local Addon = CreateFrame("Frame", AddonName, UIParent)
+local Addon = CreateFrame("Frame", AddonName, SettingsPanel or InterfaceOptionsFrame)
 
 --------------------------------------------------------------------------------
 -- Saved settings setup stuff
@@ -60,6 +58,9 @@ end
 
 function Addon:GetDatabaseDefaults()
 	return {
+		-- how frequently we want to update, in seconds
+		updateDelay = 0.2,
+
 		-- enable range coloring on pet actions
 		petActions = true,
 
@@ -67,7 +68,7 @@ function Addon:GetDatabaseDefaults()
 		flashAnimations = true,
 		flashDuration = ATTACK_BUTTON_FLASH_TIME * 1.5,
 
-		-- default colors (r, g, b, a)
+		-- default colors (r, g, b, a, desaturate)
 		normal = {1, 1, 1, 1, desaturate = false},
 		oor = {1, 0.3, 0.1, 1, desaturate = true},
 		oom = {0.1, 0.3, 1, 1, desaturate = true},
@@ -92,20 +93,12 @@ function Addon:OnLoad()
 
 	-- setup script handlers
 	self:SetScript("OnEvent", self.OnEvent)
-	self:SetScript("OnUpdate", self.OnUpdate)
+	self:SetScript("OnShow", self.OnShow)
 
 	-- register any events we need to watch
 	self:RegisterEvent("ADDON_LOADED")
 	self:RegisterEvent("PLAYER_LOGIN")
 	self:RegisterEvent("PLAYER_LOGOUT")
-
-	-- watch for the options menu to be shown, load and the options UI when it does
-	local optionsFrameWatcher = CreateFrame("Frame", nil, SettingsPanel or InterfaceOptionsFrame)
-	optionsFrameWatcher:SetScript("OnShow", function(watcher)
-		LoadAddOn(AddonName .. "_Config")
-
-		watcher:SetScript("OnShow", nil)
-	end)
 
 	-- drop this method, as we won't need it again
 	self.OnLoad = nil
@@ -117,6 +110,12 @@ function Addon:OnEvent(event, ...)
 	if func then
 		func(self, event, ...)
 	end
+end
+
+-- watch for the options menu to be shown, load and the options UI when it does
+function Addon:OnShow()
+	LoadAddOn(AddonName .. "_Config")
+	self:SetScript("OnShow", nil)
 end
 
 -- when the addon finishes loading
@@ -374,17 +373,8 @@ end
 -- Update API
 --------------------------------------------------------------------------------
 
--- globals used in OnUpdate
-local delta = 0
 
-function Addon:OnUpdate(elapsed)
-	if delta >= UPDATE_DELAY then
-		delta = elapsed
-	else
-		delta = delta + elapsed
-		return
-	end
-
+function Addon:HandleUpdate()
 	-- update actions
 	local states = self.buttonStates
 	for button in pairs(self.watchedActions) do
@@ -477,11 +467,11 @@ function Addon:UpdateActionButtonWatched(button)
 	if button.action and button:IsVisible() and ActionHasRange(button.action) then
 		if not self.watchedActions[button] then
 			self.watchedActions[button] = true
-			self:UpdateShown()
+			self:UpdateActive()
 		end
 	elseif self.watchedActions[button] then
 		self.watchedActions[button] = nil
-		self:UpdateShown()
+		self:UpdateActive()
 	end
 end
 
@@ -495,19 +485,24 @@ function Addon:UpdatePetActionButtonWatched(button)
 	if button:IsVisible() and petActionHasRange(button:GetID() or 0) then
 		if not self.watchedPetActions[button] then
 			self.watchedPetActions[button] = true
-			self:UpdateShown()
+			self:UpdateActive()
 		end
 	elseif self.watchedPetActions[button] then
 		self.watchedPetActions[button] = nil
-		self:UpdateShown()
+		self:UpdateActive()
 	end
 end
 
-function Addon:UpdateShown()
+function Addon:UpdateActive()
 	if next(self.watchedActions) or next(self.watchedPetActions) then
-		self:Show()
-	else
-		self:Hide()
+		if not self.ticker then
+			self.ticker = C_Timer.NewTicker(self.sets.updateDelay, function()
+				self:HandleUpdate()
+			end)
+		end
+	elseif self.ticker then
+		self.ticker:Cancel()
+		self.ticker = nil
 	end
 end
 
