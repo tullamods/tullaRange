@@ -362,14 +362,17 @@ end
 -- Update API
 --------------------------------------------------------------------------------
 
+-- globals used in OnUpdate
 local GetActionInfo = GetActionInfo
-local GetPetActionInfo = GetPetActionInfo
-local GetPetActionSlotUsable = GetPetActionSlotUsable
-local IsUsableAction = IsUsableAction
-local IsActionInRange = IsActionInRange
 local GetMacroInfo = GetMacroInfo
 local GetMacroSpell = GetMacroSpell
+local GetPetActionInfo = GetPetActionInfo
+local GetPetActionSlotUsable = GetPetActionSlotUsable
 local GetSpellPowerCost = GetSpellPowerCost
+local IsActionInRange = IsActionInRange
+local IsUsableAction = IsUsableAction
+local UnitPower = UnitPower
+
 local delta = 0
 
 function Addon:OnUpdate(elapsed)
@@ -380,8 +383,9 @@ function Addon:OnUpdate(elapsed)
 		return
 	end
 
+	-- update actions
 	for button in pairs(self.watchedActions) do
-		local actionType, actionTypeId = GetActionInfo(button.action)
+		local actionType, actionTypeID = GetActionInfo(button.action)
 
 		if not actionType then
 			if self.buttonStates[button] ~= "normal" then
@@ -395,31 +399,31 @@ function Addon:OnUpdate(elapsed)
 			-- for macros with names that start with a #, we prioritize the OOM check
 			-- using a spell cost strategy over other ones to better clarify if the
 			-- macro is actually usable or not
-			local name = GetMacroInfo(actionTypeId)
+			local name = GetMacroInfo(actionTypeID)
 
 			if name and name:sub(1, 1) == "#" then
-				local spellId = GetMacroSpell(actionTypeId)
+				local spellID = GetMacroSpell(actionTypeID)
 
 				-- only run the check for spell macros
-				if spellId then
+				if spellID then
 					local usable = true
 
-					for _, cost in ipairs(GetSpellPowerCost(spellId)) do
+					for _, cost in ipairs(GetSpellPowerCost(spellID)) do
 						if UnitPower("player", cost.type) < cost.minCost then
-							if self.buttonStates[button] ~= "oom" then
-								self.buttonStates[button] = "oom"
-
-								local color = self.sets["oom"]
-								button.icon:SetDesaturated(true)
-								button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
-							end
-
 							usable = false
 							break
 						end
 					end
 
-					if usable then
+					if not usable then
+						if self.buttonStates[button] ~= "oom" then
+							self.buttonStates[button] = "oom"
+
+							local color = self.sets["oom"]
+							button.icon:SetDesaturated(true)
+							button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
+						end
+					else
 						if IsActionInRange(button.action) == false then
 							if self.buttonStates[button] ~= "oor" then
 								self.buttonStates[button] = "oor"
@@ -484,6 +488,7 @@ function Addon:OnUpdate(elapsed)
 		end
 	end
 
+	-- update pet actions
 	for button in pairs(self.watchedPetActions) do
 		-- pet action button specific stuff
 		local slot = button:GetID() or 0
