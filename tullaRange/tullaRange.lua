@@ -156,7 +156,7 @@ function Addon:PLAYER_LOGIN(event)
 	end
 
 	local function actionButton_UpdateUsable(button)
-		local actionType, actionTypeId = GetActionInfo(button.action)
+		local actionType, actionTypeID = GetActionInfo(button.action)
 
 		if not actionType then
 			self:SetButtonState(button, "normal")
@@ -164,23 +164,24 @@ function Addon:PLAYER_LOGIN(event)
 			-- for macros with names that start with a #, we prioritize the OOM check
 			-- using a spell cost strategy over other ones to better clarify if the
 			-- macro is actually usable or not
-			local name = GetMacroInfo(actionTypeId)
+			local name = GetMacroInfo(actionTypeID)
 
 			if name and name:sub(1, 1) == "#" then
-				local spellId = GetMacroSpell(actionTypeId)
+				local spellID = GetMacroSpell(actionTypeID)
 
 				-- only run the check for spell macros
-				if spellId then
-					local debounce = true
+				if spellID then
+					local usable = true
 
-					for _, cost in ipairs(GetSpellPowerCost(spellId)) do
+					for _, cost in ipairs(GetSpellPowerCost(spellID)) do
 						if UnitPower("player", cost.type) < cost.minCost then
 							self:SetButtonState(button, "oom")
-							debounce = false
+							usable = false
+							break
 						end
 					end
 
-					if debounce then
+					if usable then
 						if IsActionInRange(button.action) == false then
 							self:SetButtonState(button, "oor")
 						else
@@ -284,7 +285,7 @@ function Addon:PLAYER_LOGIN(event)
 		self.petActions = {}
 
 		for i = 1, NUM_PET_ACTION_SLOTS do
-			tinsert(self.petActions, _G["PetActionButton" .. i])
+			self.petActions[i] =  _G["PetActionButton" .. i]
 		end
 
 		local function petButton_OnShowHide(button)
