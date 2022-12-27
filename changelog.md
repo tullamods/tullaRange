@@ -1,5 +1,11 @@
 # tullaRange release notes
 
+## 10.0.6
+
+* Apply [Odjur](https://github.com/Odjur)'s optimizations
+* Move update frequency into internal configuration settings
+* Move desaturate into internal configuration settings
+
 ## 10.0.5
 
 * No longer desaturating when unusable, just out of range or out of mana
