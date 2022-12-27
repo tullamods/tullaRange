@@ -29,7 +29,7 @@ local LoadAddOn = _G.LoadAddOn
 local DB_KEY = "TULLARANGE_COLORS"
 
 -- how frequently we want to update colors, in seconds
-local UPDATE_DELAY = 0
+local UPDATE_DELAY = 1/60
 
 -- the addon event handler
 local Addon = CreateFrame("Frame", AddonName, SettingsPanel or InterfaceOptionsFrame)
