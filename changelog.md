@@ -3,8 +3,9 @@
 ## 10.0.6
 
 * Apply [Odjur](https://github.com/Odjur)'s optimizations
-* Move update frequency into internal configuration settings
-* Move desaturate into internal configuration settings
+* Add desaturate to configuration settings
+* Add update frequency to internal configuration settings
+* Readjust UI to implement desaturate and opacity settings
 
 ## 10.0.5
 
