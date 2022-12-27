@@ -386,6 +386,7 @@ function Addon:OnUpdate(elapsed)
 	end
 
 	-- update actions
+	local states = self.buttonStates
 	for button in pairs(self.watchedActions) do
 		local state = "normal"
 		local actionType, actionTypeID = GetActionInfo(button.action)
@@ -430,8 +431,8 @@ function Addon:OnUpdate(elapsed)
 			end
 		end
 
-		if self.buttonStates[button] ~= state then
-			self.buttonStates[button] = state
+		if states[button] ~= state then
+			states[button] = state
 
 			local color = self.sets[state]
 			button.icon:SetDesaturated(color.desaturate)
@@ -462,8 +463,8 @@ function Addon:OnUpdate(elapsed)
 			state = "unusable"
 		end
 
-		if self.buttonStates[button] ~= state then
-			self.buttonStates[button] = state
+		if states[button] ~= state then
+			states[button] = state
 
 			local color = self.sets[state]
 			button.icon:SetDesaturated(color.desaturate)
