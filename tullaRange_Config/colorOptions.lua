@@ -55,10 +55,6 @@ function ColorOptions:AddWidgets()
 
 		selector:SetHeight(160)
 
-		local bg = selector:CreateTexture(nil, 'BACKGROUND')
-		bg:SetAllPoints(true)
-		bg:SetColorTexture(0, 1, 0, 0.5)
-
 		if i == 1 then
 			selector:SetPoint('TOPLEFT', 12, -64)
 			selector:SetPoint('TOPRIGHT', -12, -64)
