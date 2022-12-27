@@ -20,7 +20,7 @@ do
 	Addon.ColorOptions = ColorOptions
 end
 
-local SPACING = 16
+local SPACING = (SettingsPanel and 16) or 8
 local COLOR_TYPES = {'oor', 'oom', 'unusable'}
 
 --[[
@@ -53,7 +53,11 @@ function ColorOptions:AddWidgets()
 	for i, type in self:GetColorTypes() do
 		local selector = self:CreateColorSelector(type)
 
-		selector:SetHeight(164)
+		selector:SetHeight(160)
+
+		local bg = selector:CreateTexture(nil, 'BACKGROUND')
+		bg:SetAllPoints(true)
+		bg:SetColorTexture(0, 1, 0, 0.5)
 
 		if i == 1 then
 			selector:SetPoint('TOPLEFT', 12, -64)
