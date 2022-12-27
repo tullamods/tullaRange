@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.0.7
+
+* Removed a leftover debug green background from the options menu
+
 ## 10.0.6
 
 * Apply [Odjur](https://github.com/Odjur)'s optimizations
