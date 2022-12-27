@@ -145,7 +145,7 @@ function Addon:SetButtonState(button, state)
 
 	local color = self.sets[state]
 	button.icon:SetDesaturated(color.desaturate)
-	button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
+	button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
 end
 
 -- when the player first logs in
@@ -426,7 +426,7 @@ function Addon:HandleUpdate()
 
 			local color = self.sets[state]
 			button.icon:SetDesaturated(color.desaturate)
-			button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
+			button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
 		end
 	end
 
@@ -458,7 +458,7 @@ function Addon:HandleUpdate()
 
 			local color = self.sets[state]
 			button.icon:SetDesaturated(color.desaturate)
-			button.icon:SetVertexColor(color[1], color[2], color[3], color[4])
+			button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
 		end
 	end
 end
@@ -562,12 +562,30 @@ end
 -- Needed for colorSelector.lua
 --------------------------------------------------------------------------------
 
-function Addon:UpdateButtonStates() end
+function Addon:UpdateButtonStates()
+	local states = self.buttonStates
+
+	for button in pairs(self.watchedActions) do
+		local state = states[button] or "normal"
+
+		local color = self.sets[state]
+		button.icon:SetDesaturated(color.desaturate)
+		button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
+	end
+
+	for button in pairs(self.watchedPetActions) do
+		local state = states[button] or "normal"
+
+		local color = self.sets[state]
+		button.icon:SetDesaturated(color.desaturate)
+		button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
+	end
+end
 
 function Addon:GetColor(state)
 	local color = self.sets[state]
 
-	return color[1], color[2], color[3], color[4]
+	return color[1], color[2], color[3], color[4], color[5]
 end
 
 -- load the addon

@@ -20,7 +20,7 @@ do
 	Addon.ColorOptions = ColorOptions
 end
 
-local SPACING = 4
+local SPACING = 16
 local COLOR_TYPES = {'oor', 'oom', 'unusable'}
 
 --[[
@@ -53,14 +53,14 @@ function ColorOptions:AddWidgets()
 	for i, type in self:GetColorTypes() do
 		local selector = self:CreateColorSelector(type)
 
-		selector:SetHeight(132)
+		selector:SetHeight(164)
 
 		if i == 1 then
-			selector:SetPoint('TOPLEFT', 12, -84)
-			selector:SetPoint('TOPRIGHT', -12, -84)
+			selector:SetPoint('TOPLEFT', 12, -64)
+			selector:SetPoint('TOPRIGHT', -12, -64)
 		else
-			selector:SetPoint('TOPLEFT', lastSelector, 'BOTTOMLEFT', 0, -(SPACING + 24))
-			selector:SetPoint('TOPRIGHT', lastSelector, 'BOTTOMRIGHT', 0, -(SPACING + 24))
+			selector:SetPoint('TOPLEFT', lastSelector, 'BOTTOMLEFT', 0, -SPACING)
+			selector:SetPoint('TOPRIGHT', lastSelector, 'BOTTOMRIGHT', 0, -SPACING)
 		end
 
 		lastSelector = selector
