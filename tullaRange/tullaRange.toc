@@ -5,6 +5,7 @@
 ## Title: tullaRange
 ## Author: Tuller
 ## Notes: Out of range coloring based on RedRange
+## Notes-ruRU: Аддон, который позволяет полностью менять цвет кнопок действий
 ## Version: @project-version@
 ## SavedVariables: TULLARANGE_COLORS
 tullaRange.lua
