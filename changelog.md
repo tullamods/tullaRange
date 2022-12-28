@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.0.8
+
+* Added [Hollicsh](https://github.com/Hollicsh)'s Russian localization
+
 ## 10.0.7
 
 * Removed a leftover debug green background from the options menu
