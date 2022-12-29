@@ -7,9 +7,10 @@
 
 local AddonName = ...
 
+local Addon = CreateFrame("Frame", AddonName, SettingsPanel or InterfaceOptionsFrame)
+
 -- the name of the database
 local DB_KEY = "TULLARANGE_COLORS"
-
 
 -- frequently used globals
 local GetActionInfo = GetActionInfo
@@ -21,9 +22,6 @@ local GetSpellPowerCost = GetSpellPowerCost
 local IsActionInRange = IsActionInRange
 local IsUsableAction = IsUsableAction
 local UnitPower = UnitPower
-
--- the addon event handler
-local Addon = CreateFrame("Frame", AddonName, SettingsPanel or InterfaceOptionsFrame)
 
 
 local SpecialMacroNames = setmetatable({}, {
@@ -37,7 +35,8 @@ local SpecialMacroNames = setmetatable({}, {
 })
 
 local function actionButton_GetState(button)
-	local actionType, actionTypeID = GetActionInfo(button.action)
+	local action = button.action
+	local actionType, actionTypeID = GetActionInfo(action)
 
 	if actionType then
 		if actionType == "macro" then
@@ -63,10 +62,9 @@ local function actionButton_GetState(button)
 			end
 		end
 
-		local isUsable, notEnoughMana = IsUsableAction(button.action)
-
+		local isUsable, notEnoughMana = IsUsableAction(action)
 		if isUsable then
-			if IsActionInRange(button.action) == false then
+			if IsActionInRange(action) == false then
 				return "oor"
 			else
 				return "normal"
