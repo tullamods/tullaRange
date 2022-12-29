@@ -25,6 +25,62 @@ local UnitPower = UnitPower
 -- the addon event handler
 local Addon = CreateFrame("Frame", AddonName, SettingsPanel or InterfaceOptionsFrame)
 
+
+local SpecialMacroNames = setmetatable({}, {
+	__index = function(t, k)
+		local result = k:sub(1, 1) == "#"
+
+		t[k] = result
+
+		return result
+	end
+})
+
+local function actionButton_GetState(button)
+	local actionType, actionTypeID = GetActionInfo(button.action)
+
+	if actionType then
+		if actionType == "macro" then
+			-- for macros with names that start with a #, we prioritize the OOM check
+			-- using a spell cost strategy over other ones to better clarify if the
+			-- macro is actually usable or not
+			local name = GetMacroInfo(actionTypeID)
+
+			if name and SpecialMacroNames[name] then
+				local spellID = GetMacroSpell(actionTypeID)
+
+				-- only run the check for spell macros
+				if spellID then
+					local costs = GetSpellPowerCost(spellID)
+					for i = 1, #costs do
+						local cost = costs[i]
+
+						if UnitPower("player", cost.type) < cost.minCost then
+							return "oom"
+						end
+					end
+				end
+			end
+		end
+
+		local isUsable, notEnoughMana = IsUsableAction(button.action)
+
+		if isUsable then
+			if IsActionInRange(button.action) == false then
+				return "oor"
+			else
+				return "normal"
+			end
+		elseif notEnoughMana then
+			return "oom"
+		else
+			return "unusuable"
+		end
+	end
+
+	return "normal"
+end
+
 --------------------------------------------------------------------------------
 -- Saved settings setup stuff
 --------------------------------------------------------------------------------
@@ -139,15 +195,6 @@ function Addon:ADDON_LOADED(event, addonName)
 	self[event] = nil
 end
 
--- use this function when performance is not critical
-function Addon:SetButtonState(button, state)
-	self.buttonStates[button] = state
-
-	local color = self.sets[state]
-	button.icon:SetDesaturated(color.desaturate)
-	button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
-end
-
 -- when the player first logs in
 function Addon:PLAYER_LOGIN(event)
 	local function button_StartFlash(button)
@@ -166,58 +213,13 @@ function Addon:PLAYER_LOGIN(event)
 	end
 
 	local function actionButton_UpdateUsable(button)
-		local actionType, actionTypeID = GetActionInfo(button.action)
+		local state = actionButton_GetState(button)
 
-		if not actionType then
-			self:SetButtonState(button, "normal")
-		elseif actionType == "macro" then
-			-- for macros with names that start with a #, we prioritize the OOM check
-			-- using a spell cost strategy over other ones to better clarify if the
-			-- macro is actually usable or not
-			local name = GetMacroInfo(actionTypeID)
+		self.buttonStates[button] = state
 
-			if name and name:sub(1, 1) == "#" then
-				local spellID = GetMacroSpell(actionTypeID)
-
-				-- only run the check for spell macros
-				if spellID then
-					local usable = true
-
-					for _, cost in ipairs(GetSpellPowerCost(spellID)) do
-						if UnitPower("player", cost.type) < cost.minCost then
-							self:SetButtonState(button, "oom")
-							usable = false
-							break
-						end
-					end
-
-					if usable then
-						if IsActionInRange(button.action) == false then
-							self:SetButtonState(button, "oor")
-						else
-							self:SetButtonState(button, "normal")
-						end
-					end
-				end
-			end
-		else
-			local isUsable, notEnoughMana = IsUsableAction(button.action)
-
-			if not isUsable then
-				if notEnoughMana then
-					self:SetButtonState(button, "oom")
-				else
-					self:SetButtonState(button, "unusable")
-				end
-			elseif IsActionInRange(button.action) == false then
-				-- we do == false here because IsActionInRange can return one of true
-				-- (has range, in range), false (has range, out of range), and nil (does
-				-- not have range) and we explicitly want to know about (has range, oor)
-				self:SetButtonState(button, "oor")
-			else
-				self:SetButtonState(button, "normal")
-			end
-		end
+		local color = self.sets[state]
+		button.icon:SetDesaturated(color.desaturate)
+		button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
 	end
 
 	-- register existing action buttons
@@ -375,51 +377,11 @@ end
 
 
 function Addon:HandleUpdate()
-	-- update actions
 	local states = self.buttonStates
+
+	-- update actions
 	for button in pairs(self.watchedActions) do
-		local state = "normal"
-		local actionType, actionTypeID = GetActionInfo(button.action)
-
-		if actionType == "macro" then
-			-- for macros with names that start with a #, we prioritize the OOM check
-			-- using a spell cost strategy over other ones to better clarify if the
-			-- macro is actually usable or not
-			local name = GetMacroInfo(actionTypeID)
-
-			if name and name:sub(1, 1) == "#" then
-				local spellID = GetMacroSpell(actionTypeID)
-
-				-- only run the check for spell macros
-				if spellID then
-					for _, cost in ipairs(GetSpellPowerCost(spellID)) do
-						if UnitPower("player", cost.type) < cost.minCost then
-							state = "oom"
-							break
-						end
-					end
-
-					if state == "normal" and IsActionInRange(button.action) == false then
-						state = "oor"
-					end
-				end
-			end
-		elseif actionType then
-			local isUsable, notEnoughMana = IsUsableAction(button.action)
-
-			if not isUsable then
-				if notEnoughMana then
-					state = "oom"
-				else
-					state = "unusable"
-				end
-			-- we do == false here because IsActionInRange can return one of true
-			-- (has range, in range), false (has range, out of range), and nil (does
-			-- not have range) and we explicitly want to know about (has range, oor)
-			elseif IsActionInRange(button.action) == false then
-				state = "oor"
-			end
-		end
+		local state = actionButton_GetState(button)
 
 		if states[button] ~= state then
 			states[button] = state
@@ -563,23 +525,7 @@ end
 --------------------------------------------------------------------------------
 
 function Addon:UpdateButtonStates()
-	local states = self.buttonStates
-
-	for button in pairs(self.watchedActions) do
-		local state = states[button] or "normal"
-
-		local color = self.sets[state]
-		button.icon:SetDesaturated(color.desaturate)
-		button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
-	end
-
-	for button in pairs(self.watchedPetActions) do
-		local state = states[button] or "normal"
-
-		local color = self.sets[state]
-		button.icon:SetDesaturated(color.desaturate)
-		button.icon:SetVertexColor(color[1], color[2], color[3], color[4], color[5])
-	end
+	wipe(self.buttonStates)
 end
 
 function Addon:GetColor(state)
