@@ -66,13 +66,11 @@ local function actionButton_GetState(button)
 		if isUsable then
 			if IsActionInRange(action) == false then
 				return "oor"
-			else
-				return "normal"
 			end
 		elseif notEnoughMana then
 			return "oom"
 		else
-			return "unusuable"
+			return "unusable"
 		end
 	end
 
