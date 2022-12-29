@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.0.9
+
+* Fix macro checks
+
 ## 10.0.8
 
 * Added [Hollicsh](https://github.com/Hollicsh)'s Russian localization
