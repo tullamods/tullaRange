@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.0.10
+
+* Update TOCs for 3.4.1
+
 ## 10.0.9
 
 * Fix macro checks
