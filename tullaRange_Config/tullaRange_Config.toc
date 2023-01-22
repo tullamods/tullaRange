@@ -1,7 +1,7 @@
 ## Interface: 100002
 ## Interface-BCC: 20504
 ## Interface-Classic: 11403
-## Interface-Wrath: 30400
+## Interface-Wrath: 30401
 ## Title: tullaRange Config
 ## Notes: GUI based configuration for tullaRange
 ## Author: Tuller

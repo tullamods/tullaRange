@@ -9,3 +9,4 @@ Desktop.ini
 
 # packager outputs
 .release
+.vscode/settings.json
