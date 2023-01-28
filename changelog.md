@@ -1,8 +1,12 @@
 # tullaRange release notes
 
+## 10.0.11
+
+* Update TOCs for World of Warcraft 10.0.5
+
 ## 10.0.10
 
-* Update TOCs for 3.4.1
+* Update TOCs for World of Warcraft 3.4.1
 
 ## 10.0.9
 
