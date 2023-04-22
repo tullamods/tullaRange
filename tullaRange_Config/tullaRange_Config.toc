@@ -1,4 +1,4 @@
-## Interface: 100005
+## Interface: 100100
 ## Interface-BCC: 20504
 ## Interface-Classic: 11403
 ## Interface-Wrath: 30401
@@ -7,6 +7,7 @@
 ## Author: Tuller
 ## Dependencies: tullaRange
 ## LoadOnDemand: 1
+## IconTexture: Interface/Icons/Inv_misc_punchcards_red
 localization\localization.xml
 widgets\widgets.xml
 colorOptions.lua

@@ -532,3 +532,9 @@ end
 
 -- load the addon
 Addon:OnLoad()
+
+_G[AddonName .. '_Launch'] = function()
+	if LoadAddOn(AddonName .. '_Config') then
+		Settings.OpenToCategory(AddonName)
+	end
+end
