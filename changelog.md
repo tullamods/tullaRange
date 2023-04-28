@@ -1,5 +1,10 @@
 # tullaRange release notes
 
+## 10.0.12
+
+* Update TOCs for World of Warcraft 10.1.0
+* Hook ActionBarActionButtonDerivedMixin, if it exists
+
 ## 10.0.11
 
 * Update TOCs for World of Warcraft 10.0.5
