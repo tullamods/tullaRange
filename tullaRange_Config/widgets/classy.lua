@@ -2,21 +2,19 @@
 
 local _, Addon = ...
 
-Addon.Classy = {
-    New = function(_, frameType, parentClass)
-        local class = CreateFrame(frameType)
+function Addon:NewWidgetTemplate(frameType, parentClass)
+    local class = CreateFrame(frameType)
 
-        class.mt = {__index = class}
+    class.mt = {__index = class}
 
-        if parentClass then
-            class = setmetatable(class, {__index = parentClass})
-            class.super = parentClass
-        end
-
-        class.Bind = function(c, obj)
-            return setmetatable(obj, c.mt)
-        end
-
-        return class
+    if parentClass then
+        class = setmetatable(class, {__index = parentClass})
+        class.super = parentClass
     end
-}
+
+    class.Bind = function(c, obj)
+        return setmetatable(obj, c.mt)
+    end
+
+    return class
+end

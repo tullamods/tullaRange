@@ -1,5 +1,13 @@
 # tullaRange release notes
 
+## 10.1.5
+
+* Note: This version does not work on 10.1.0 realms (aka Retail)
+* (WoW 10.1.5) Rebuilt using the new ACTION_RANGE_CHECK_UPDATE event
+* (WoW 3.4.2) Fixed an error when loading the settings UI
+* Hotkeys are now colored red when an action is out of range, and white otherwise.
+* Pet actions now implement out of mana coloring
+
 ## 10.1.0
 
 * Update TOCs for World of Warcraft 10.1.0

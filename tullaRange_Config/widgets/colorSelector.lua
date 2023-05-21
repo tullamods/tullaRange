@@ -1,40 +1,46 @@
---[[
-	colorSelector.lua
-		A bagnon color selector
---]]
+--------------------------------------------------------------------------------
+-- a color selector widget
+--
+-- provides options for red, green, blue, and alpha channels
+-- as well as desaturate checkbox
+--------------------------------------------------------------------------------
 local _, Addon = ...
+
 local L = Addon.L
 local tullaRange = _G.tullaRange
-local ColorSelector = Addon.Classy:New('Frame')
-Addon.ColorSelector = ColorSelector
-
 local ColorChannels = {'Red', 'Green', 'Blue', 'Opacity'}
 
+local ColorSelector = Addon:NewWidgetTemplate('Frame')
+
 function ColorSelector:New(state, parent)
-    local result = self:Bind(CreateFrame('Frame', '$parentEditor_' .. state, parent))
+    local selector = self:Bind(CreateFrame('Frame', nil, parent))
 
-    local heading = result:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightLarge')
-    heading:SetJustifyH('LEFT')
-    heading:SetPoint('TOPLEFT')
-    heading:SetText(L[state])
-    heading:SetWidth(120)
-    result.text = heading
+    -- add title
+    local title = selector:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightLarge')
+    title:SetJustifyH('LEFT')
+    title:SetPoint('TOPLEFT')
+    title:SetText(L[state])
+    title:SetWidth(120)
+    selector.Title = title
 
-    local preview = result:CreateTexture(nil, 'ARTWORK')
-    preview:SetPoint('LEFT')
-    preview:SetSize(104, 104)
-    result.preview = preview
+    -- add preview image
+    local previewIcon = selector:CreateTexture(nil, 'ARTWORK')
+    previewIcon:SetPoint('LEFT')
+    previewIcon:SetSize(104, 104)
+    selector.PreviewIcon = previewIcon
 
-    -- color sliders
+    -- add color channel siders
     local sliders = {}
     for i, color in ipairs(ColorChannels) do
-        local slider = Addon.Slider:New(L[color], result, 0, 100, 1)
+        local slider = Addon.Slider:New(L[color], selector, 0, 100, 1)
 
         slider.SetSavedValue = function(_, value)
             tullaRange.sets[state][i] = math.floor(value + 0.5) / 100
-            preview:SetVertexColor(tullaRange:GetColor(state))
 
-            tullaRange:UpdateButtonStates()
+            local r, g, b, a = tullaRange:GetColor(state)
+            previewIcon:SetVertexColor(r, g, b, a)
+
+            tullaRange:RequestUpdate()
         end
 
         slider.GetSavedValue = function()
@@ -45,37 +51,39 @@ function ColorSelector:New(state, parent)
             slider:SetPoint('TOPLEFT', sliders[i - 1], 'BOTTOMLEFT', 0, -24)
             slider:SetPoint('RIGHT')
         else
-            slider:SetPoint('TOPLEFT', heading, 'TOPRIGHT', 8, -16)
+            slider:SetPoint('TOPLEFT', title, 'TOPRIGHT', 8, -16)
             slider:SetPoint('RIGHT')
         end
 
         sliders[i] = slider
     end
 
-    result.sliders = sliders
+    selector.sliders = sliders
 
-    local desaturate = CreateFrame('CheckButton', '$parentDesaturate', result, 'InterfaceOptionsCheckButtonTemplate')
+    -- add desaturate button
+    local desaturate = CreateFrame('CheckButton', nil, selector, 'InterfaceOptionsCheckButtonTemplate')
+
     desaturate.Text:SetText(L.Desaturate)
 
     desaturate:SetScript("OnShow", function(checkbox)
         local desaturated = tullaRange.sets[state].desaturate and true
 
         checkbox:SetChecked(desaturated)
-        checkbox:GetParent().preview:SetDesaturated(desaturated)
+        previewIcon:SetDesaturated(desaturated)
     end)
 
     desaturate:SetScript("OnClick", function(checkbox)
         local desaturated = checkbox:GetChecked() and true
 
-        checkbox:GetParent().preview:SetDesaturated(desaturated)
-        tullaRange.sets[state].desaturate = desaturated
+        previewIcon:SetDesaturated(desaturated)
 
-        tullaRange:UpdateButtonStates()
+        tullaRange.sets[state].desaturate = desaturated
+        tullaRange:RequestUpdate()
     end)
 
     desaturate:SetPoint('BOTTOMLEFT')
 
-    return result
+    return selector
 end
 
 do
@@ -99,10 +107,13 @@ do
     function ColorSelector:UpdateValues()
         local texture = spellIcons[math.random(1, #spellIcons)]
 
-        self.preview:SetTexture(texture)
+        self.PreviewIcon:SetTexture(texture)
 
         for _, slider in pairs(self.sliders) do
             slider:UpdateValue()
         end
     end
 end
+
+-- exports
+Addon.ColorSelector = ColorSelector

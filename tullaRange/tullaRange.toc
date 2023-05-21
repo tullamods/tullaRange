@@ -1,7 +1,6 @@
-## Interface: 100100
-## Interface-BCC: 20504
+## Interface: 100105
+## Interface-Wrath: 30402
 ## Interface-Classic: 11403
-## Interface-Wrath: 30401
 ## Title: tullaRange
 ## Author: Tuller
 ## Notes: Out of range coloring based on RedRange
@@ -10,4 +9,8 @@
 ## SavedVariables: TULLARANGE_COLORS
 ## IconTexture: Interface/Icons/Inv_misc_punchcards_red
 ## AddonCompartmentFunc: tullaRange_Launch
+attackFlash.lua
+actionState.lua
+updater.modern.lua
+updater.classic.lua
 tullaRange.lua

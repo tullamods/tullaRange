@@ -3,7 +3,8 @@
 		A bagnon options panel
 --]]
 local _, Addon = ...
-local OptionsPanel = Addon.Classy:New('Frame')
+
+local OptionsPanel = Addon:NewWidgetTemplate('Frame')
 
 function OptionsPanel:New(name, parent, title, subtitle, icon)
     local frame = self:Bind(CreateFrame('Frame', name))
@@ -41,4 +42,5 @@ function OptionsPanel:New(name, parent, title, subtitle, icon)
     return frame
 end
 
+-- exports
 Addon.OptionsPanel = OptionsPanel

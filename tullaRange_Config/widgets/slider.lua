@@ -3,43 +3,34 @@
 		A options slider
 --]]
 local _, Addon = ...
-local Slider = Addon.Classy:New('Slider')
-Addon.Slider = Slider
+
+local Slider = Addon:NewWidgetTemplate('Slider')
 
 function Slider:New(name, parent, low, high, step)
-    local f
+    local slider = self:Bind(CreateFrame('Slider', nil, parent, 'UISliderTemplate'))
 
-    if SettingsPanel then
-        f = self:Bind(CreateFrame('Slider', parent:GetName() .. '_' .. name, parent, 'UISliderTemplateWithLabels'))
-        f:SetSize(144, 17)
-    else
-        f = self:Bind(CreateFrame('Slider', parent:GetName() .. '_' .. name, parent, 'OptionsSliderTemplate'))
-    end
+    slider:SetSize(144, 17)
+    slider:SetMinMaxValues(low, high)
+    slider:SetValueStep(step)
+    slider:EnableMouseWheel(true)
 
-    f:SetMinMaxValues(low, high)
-    f:SetValueStep(step)
-    f:EnableMouseWheel(true)
+    local label = slider:CreateFontString(nil, 'ARTWORK', 'GameFontNormal')
+    label:SetPoint('BOTTOMLEFT', slider, 'TOPLEFT')
+    label:SetText(name)
+    slider.Label = label
 
-    f.Text:SetText(name)
-    f.Text:SetFontObject('GameFontNormalLeft')
-    f.Text:ClearAllPoints()
-    f.Text:SetPoint('BOTTOMLEFT', f, 'TOPLEFT')
-    f.Low:SetText('')
-    f.High:SetText('')
+    local value = slider:CreateFontString(nil, 'ARTWORK', 'GameFontHighlightSmallRight')
+    value:SetPoint('BOTTOMRIGHT', slider, 'TOPRIGHT')
+    slider.Value = value
 
-    local text = f:CreateFontString(nil, 'BACKGROUND', 'GameFontHighlightSmall')
-    text:SetJustifyH('RIGHT')
-    text:SetPoint('BOTTOMRIGHT', f, 'TOPRIGHT')
-    f.valText = text
+    slider:SetScript('OnShow', slider.OnShow)
+    slider:SetScript('OnMouseWheel', slider.OnMouseWheel)
+    slider:SetScript('OnValueChanged', slider.OnValueChanged)
+    slider:SetScript('OnMouseWheel', slider.OnMouseWheel)
+    slider:SetScript('OnEnter', slider.OnEnter)
+    slider:SetScript('OnLeave', slider.OnLeave)
 
-    f:SetScript('OnShow', f.OnShow)
-    f:SetScript('OnMouseWheel', f.OnMouseWheel)
-    f:SetScript('OnValueChanged', f.OnValueChanged)
-    f:SetScript('OnMouseWheel', f.OnMouseWheel)
-    f:SetScript('OnEnter', f.OnEnter)
-    f:SetScript('OnLeave', f.OnLeave)
-
-    return f
+    return slider
 end
 
 function Slider:OnShow()
@@ -92,8 +83,11 @@ end
 
 function Slider:UpdateText(value)
     if self.GetFormattedText then
-        self.valText:SetText(self:GetFormattedText(value))
+        self.Value:SetText(self:GetFormattedText(value))
     else
-        self.valText:SetText(value)
+        self.Value:SetText(value)
     end
 end
+
+-- exports
+Addon.Slider = Slider
