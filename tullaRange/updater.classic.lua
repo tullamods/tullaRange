@@ -43,12 +43,13 @@ local function update()
 			iconState = "unusable"
 		end
 
-		if states[button] ~= iconState then
-			states[button] = iconState
+		local icon = button.icon
+		if states[icon] ~= iconState then
+			states[icon] = iconState
 
 			local r, g, b, a, desaturate = Addon:GetColor(iconState)
-			button.icon:SetDesaturated(desaturate)
-			button.icon:SetVertexColor(r, g, b, a)
+			icon:SetDesaturated(desaturate)
+			icon:SetVertexColor(r, g, b, a)
 		end
 
 		local hotkeyState
@@ -63,7 +64,7 @@ local function update()
 			states[hotkey] = hotkeyState
 
 			local r, g, b = Addon:GetColor(hotkeyState)
-			button.hotkey:SetVertexColor(r, g, b)
+			hotkey:SetVertexColor(r, g, b)
 		end
 	end
 
