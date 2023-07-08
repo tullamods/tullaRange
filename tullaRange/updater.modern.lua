@@ -219,7 +219,9 @@ function Addon:Enable()
 	end
 
 	-- and watch for any additional action buttons
-	hooksecurefunc(ActionBarButtonEventsFrame, "RegisterFrame", registerActionButton)
+	hooksecurefunc(ActionBarButtonEventsFrame, "RegisterFrame", function(_, button)
+		registerActionButton(button)
+	end)
 
 	-- disable the ActionBarButtonUpdateFrame OnUpdate handler (unneeded)
 	ActionBarButtonUpdateFrame:SetScript("OnUpdate", nil)

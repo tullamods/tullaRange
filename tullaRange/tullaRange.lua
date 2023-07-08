@@ -52,7 +52,11 @@ function Addon:ADDON_LOADED(event, addonName)
 	end
 
 	-- enable the addon, this is defined in classic/modern
-	self:Enable()
+	if type(self.Enable) == "function" then
+		self:Enable()
+	else
+		print(addonName, " - Unable to enable for World of Warcraft version", (GetBuildInfo()))
+	end
 
 	-- get rid of the handler, as we don't need it anymore
 	self.frame:UnregisterEvent(event)

@@ -7,7 +7,7 @@
 -- The general idea for this approach comes from the addon RedRange.
 --------------------------------------------------------------------------------
 
-if ActionBarButtonRangeCheckFrame then return end
+if type(ActionBarButtonEventsFrame_RegisterFrame) ~= "function" then return end
 
 local _, Addon = ...
 
