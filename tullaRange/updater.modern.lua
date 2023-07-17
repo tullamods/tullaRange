@@ -11,6 +11,7 @@ if not ActionBarButtonRangeCheckFrame then return end
 local _, Addon = ...
 
 local states = {}
+local registered = {}
 
 --------------------------------------------------------------------------------
 -- action button coloring
@@ -63,7 +64,10 @@ local function actionButton_UpdateUsable(button)
 	end
 end
 
+
 local function registerActionButton(button)
+	if registered[button] then return end
+
 	hooksecurefunc(button, "UpdateUsable", actionButton_UpdateUsable)
 
 	if Addon:HandleAttackAnimations() then
@@ -71,6 +75,8 @@ local function registerActionButton(button)
 		button:HookScript("OnHide", Addon.UpdateAttackAnimation)
 		hooksecurefunc(button, "StartFlash", Addon.StartAttackAnimation)
 	end
+
+	registered[button] = true
 end
 
 --------------------------------------------------------------------------------
@@ -197,6 +203,8 @@ local function petButton_UpdateWatched(button)
 end
 
 local function registerPetButton(button)
+	if registered[button] then return end
+
 	button:SetScript("OnUpdate", nil)
 	button:HookScript("OnShow", petButton_UpdateWatched)
 	button:HookScript("OnHide", petButton_UpdateWatched)
@@ -206,6 +214,8 @@ local function registerPetButton(button)
 		button:HookScript("OnShow", Addon.UpdateAttackAnimation)
 		button:HookScript("OnHide", Addon.UpdateAttackAnimation)
 	end
+
+	registered[button] = true
 end
 
 --------------------------------------------------------------------------------
