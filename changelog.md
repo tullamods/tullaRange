@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.1.6
+
+* Fix an issue causing acton buttons to be registered multiple times
+
 ## 10.1.5
 
 * Note: This version does not work on 10.1.0 realms (aka Retail)
