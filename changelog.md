@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.2.0
+
+* Update TOCs for 10.2.0
+
 ## 10.1.8
 
 * Revert TOC back to 3.4.2
