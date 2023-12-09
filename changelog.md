@@ -2,7 +2,7 @@
 
 ## 10.2.1
 
-* Update TOCs for 1.15.0
+* Update TOCs for 3.4.3 and 1.15.0
 
 ## 10.2.0
 
