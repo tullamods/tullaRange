@@ -6,8 +6,15 @@ local _, Addon = ...
 
 local Slider = Addon:NewWidgetTemplate('Slider')
 
+local SLIDER_TEMPLATE_NAME
+if LE_EXPANSION_LEVEL_CURRENT <= LE_EXPANSION_WRATH_OF_THE_LICH_KING then
+    SLIDER_TEMPLATE_NAME = "HorizontalSliderTemplate"
+else
+    SLIDER_TEMPLATE_NAME = "UISliderTemplate"
+end
+
 function Slider:New(name, parent, low, high, step)
-    local slider = self:Bind(CreateFrame('Slider', nil, parent, 'UISliderTemplate'))
+    local slider = self:Bind(CreateFrame('Slider', nil, parent, SLIDER_TEMPLATE_NAME))
 
     slider:SetSize(144, 17)
     slider:SetMinMaxValues(low, high)
