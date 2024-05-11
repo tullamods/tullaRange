@@ -23,7 +23,7 @@ function Addon:OnLoad()
 
 	-- load the options menu when the settings frame is loaded
 	self.frame:SetScript("OnShow", function(frame)
-		LoadAddOn(AddonName .. "_Config")
+		C_AddOns.LoadAddOn(AddonName .. "_Config")
 		frame:SetScript("OnShow", nil)
 	end)
 
@@ -46,7 +46,7 @@ function Addon:ADDON_LOADED(event, addonName)
 
 	-- add a launcher for the addons tray
 	_G[addonName .. '_Launch'] = function()
-		if LoadAddOn(addonName .. '_Config') then
+		if C_AddOns.LoadAddOn(addonName .. '_Config') then
 			Settings.OpenToCategory(addonName)
 		end
 	end

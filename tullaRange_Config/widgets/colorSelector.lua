@@ -90,14 +90,30 @@ do
     local SpellIcons = {}
 
     -- generate spell icons
-    for i = 1, GetNumSpellTabs() do
-        local _, _, offset, numSlots = GetSpellTabInfo(i)
-        local tabEnd = offset + numSlots
+    if type(GetNumSpellTabs) == "function" then
+        for i = 1, GetNumSpellTabs() do
+            local _, _, offset, numSlots = GetSpellTabInfo(i)
+            local tabEnd = offset + numSlots
 
-        for j = offset, tabEnd - 1 do
-            local texture = GetSpellBookItemTexture(j, 'player')
-            if texture then
-                SpellIcons[#SpellIcons + 1] = texture
+            for j = offset, tabEnd - 1 do
+                local texture = GetSpellBookItemTexture(j, 'player')
+                if texture then
+                    SpellIcons[#SpellIcons + 1] = texture
+                end
+            end
+        end
+    else
+        for i = 1, C_SpellBook.GetNumSpellBookSkillLines() do
+            local skillLineInfo = C_SpellBook.GetSpellBookSkillLineInfo(i)
+            local offset = skillLineInfo.itemIndexOffset
+            local numSlots = skillLineInfo.numSpellBookItems
+            local tabEnd = offset + numSlots
+
+            for j = offset, tabEnd - 1 do
+                local texture = C_SpellBook.GetSpellBookItemTexture(j, Enum.SpellBookSpellBank.Player)
+                if texture then
+                    SpellIcons[#SpellIcons + 1] = texture
+                end
             end
         end
     end
