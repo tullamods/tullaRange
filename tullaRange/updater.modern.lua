@@ -68,7 +68,7 @@ end
 local function registerActionButton(button)
 	if registered[button] then return end
 
-	hooksecurefunc(button, "UpdateUsable", actionButton_UpdateUsable)
+	hooksecurefunc(button, "OnUpdate", actionButton_UpdateUsable)
 
 	if Addon:HandleAttackAnimations() then
 		button:HookScript("OnShow", Addon.UpdateAttackAnimation)
