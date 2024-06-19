@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 10.2.6
+
+* Update TOCs
+
 ## 10.2.5
 
 * Added initial War Within support
