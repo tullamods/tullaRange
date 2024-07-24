@@ -90,7 +90,7 @@ do
     local SpellIcons = {}
 
     -- generate spell icons
-    if type(GetNumSpellTabs) == "function" then
+    if type(GetSpellBookItemTexture) == "function" then
         for i = 1, GetNumSpellTabs() do
             local _, _, offset, numSlots = GetSpellTabInfo(i)
             local tabEnd = offset + numSlots
