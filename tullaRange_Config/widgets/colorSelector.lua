@@ -12,6 +12,18 @@ local ColorChannels = { 'Red', 'Green', 'Blue', 'Opacity' }
 
 local ColorSelector = Addon:NewWidgetTemplate('Frame')
 
+local function getRandomSpellIcon()
+    if type(GetSpellBookItemTexture) == "function" then
+        local _, _, offset, numSlots = GetSpellTabInfo(GetNumSpellTabs())
+        return GetSpellBookItemTexture(math.random(offset + numSlots - 1), 'player')
+    end
+
+    local i = C_SpellBook.GetSpellBookSkillLineInfo(C_SpellBook.GetNumSpellBookSkillLines())
+    local offset = i.itemIndexOffset
+    local numSlots = i.numSpellBookItems
+    return C_SpellBook.GetSpellBookItemTexture(math.random(offset + numSlots - 1), Enum.SpellBookSpellBank.Player)
+end
+
 function ColorSelector:New(state, parent)
     local selector = self:Bind(CreateFrame('Frame', nil, parent))
 
@@ -24,9 +36,17 @@ function ColorSelector:New(state, parent)
     selector.Title = title
 
     -- add preview image
-    local previewIcon = selector:CreateTexture(nil, 'ARTWORK')
-    previewIcon:SetPoint('LEFT')
-    previewIcon:SetSize(104, 104)
+    local previewIconFrame = CreateFrame('Button', nil, selector)
+    previewIconFrame:SetPoint('LEFT')
+    previewIconFrame:SetSize(104, 104)
+    previewIconFrame:SetScript('OnClick', function(f) f.Icon:SetTexture(getRandomSpellIcon()) end)
+
+    local previewIcon = previewIconFrame:CreateTexture(nil, 'ARTWORK')
+    previewIcon:SetAllPoints()
+    previewIcon:SetTexture(getRandomSpellIcon())
+    previewIcon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+    previewIconFrame.Icon = previewIcon
+
     selector.PreviewIcon = previewIcon
 
     -- add color channel siders
@@ -86,46 +106,9 @@ function ColorSelector:New(state, parent)
     return selector
 end
 
-do
-    local SpellIcons = {}
-
-    -- generate spell icons
-    if type(GetSpellBookItemTexture) == "function" then
-        for i = 1, GetNumSpellTabs() do
-            local _, _, offset, numSlots = GetSpellTabInfo(i)
-            local tabEnd = offset + numSlots
-
-            for j = offset, tabEnd - 1 do
-                local texture = GetSpellBookItemTexture(j, 'player')
-                if texture then
-                    SpellIcons[#SpellIcons + 1] = texture
-                end
-            end
-        end
-    else
-        for i = 1, C_SpellBook.GetNumSpellBookSkillLines() do
-            local skillLineInfo = C_SpellBook.GetSpellBookSkillLineInfo(i)
-            local offset = skillLineInfo.itemIndexOffset
-            local numSlots = skillLineInfo.numSpellBookItems
-            local tabEnd = offset + numSlots
-
-            for j = offset, tabEnd - 1 do
-                local texture = C_SpellBook.GetSpellBookItemTexture(j, Enum.SpellBookSpellBank.Player)
-                if texture then
-                    SpellIcons[#SpellIcons + 1] = texture
-                end
-            end
-        end
-    end
-
-    function ColorSelector:UpdateValues()
-        local texture = SpellIcons[math.random(1, #SpellIcons)]
-
-        self.PreviewIcon:SetTexture(texture)
-
-        for _, slider in pairs(self.sliders) do
-            slider:UpdateValue()
-        end
+function ColorSelector:UpdateValues()
+    for _, slider in pairs(self.sliders) do
+        slider:UpdateValue()
     end
 end
 
