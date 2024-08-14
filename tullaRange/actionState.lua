@@ -45,7 +45,7 @@ function Addon.GetPetActionState(slot)
 	local oor = checksRange and not inRange
 
 	if spellID then
-		local _, oom = (IsSpellUsable or C_Spell.IsSpellUsable)(spellID)
+		local _, oom = (IsUsableSpell or C_Spell.IsSpellUsable)(spellID)
 		if oom then
 			return false, oom, oor
 		end
