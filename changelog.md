@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 11.0.1
+
+* Fixed errors when summoning a pet in WoW 11.0.2
+
 ## 11.0.0
 
 * Fix an options menu error in WoW 11.0.0
