@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 11.0.3
+
+* Drop visibility chek from UpdateUsable calls in Retail
+
 ## 11.0.2
 
 * Fix IsUsableSpell typo
