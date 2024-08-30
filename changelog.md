@@ -1,5 +1,10 @@
 # tullaRange release notes
 
+## 11.0.4
+
+* Fixed an issue causing range checking to incorrectly revert actions to displaying as usable, 
+  even if they are not
+
 ## 11.0.3
 
 * Drop visibility chek from UpdateUsable calls in Retail

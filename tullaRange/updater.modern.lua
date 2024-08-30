@@ -61,7 +61,7 @@ end
 local function registerActionButton(button)
 	if registered[button] then return end
 
-	hooksecurefunc(button, "UpdateUsable", actionButton_UpdateColor)
+	hooksecurefunc(button, "UpdateUsable", actionButton_UpdateColor)	
 
 	if Addon:HandleAttackAnimations() then
 		button:HookScript("OnShow", Addon.UpdateAttackAnimation)
@@ -282,31 +282,57 @@ function Addon:ACTION_RANGE_CHECK_UPDATE(_, slot, isInRange, checksRange)
 		return
 	end
 
-	local fromState, toState
-	if checksRange and not isInRange then
-		fromState = "normal"
-		toState = "oor"
+	local oor = checksRange and not isInRange
+	if oor then
+		local newState = "oor"
+		local color = Addon.sets[newState]
+
+		for _, button in pairs(buttons) do
+			local icon = button.icon
+			if states[icon] ~= newState then
+				states[icon] = newState
+	
+				icon:SetVertexColor(color[1], color[2], color[3], color[4])
+				icon:SetDesaturated(color.desaturate)
+			end
+	
+			local hotkey = button.HotKey
+			if states[hotkey] == newState then
+				states[hotkey] = newState
+				hotkey:SetVertexColor(color[1], color[2], color[3])
+			end
+		end
 	else
-		fromState = "oor"
-		toState = "normal"
-	end
+		local oldState = "oor"
 
-	for _, button in pairs(buttons) do
-		local icon = button.icon
-		if states[icon] == fromState then
-			states[icon] = toState
-
-			local color = Addon.sets[toState]
-			icon:SetVertexColor(color[1], color[2], color[3], color[4])
-			icon:SetDesaturated(color.desaturate)
-		end
-
-		local hotkey = button.HotKey
-		if states[hotkey] == fromState then
-			states[hotkey] = toState
-
-			local color = Addon.sets[toState]
-			hotkey:SetVertexColor(color[1], color[2], color[3])
-		end
+		for _, button in pairs(buttons) do
+			local icon = button.icon
+			if states[icon] == oldState then
+				local usable, oom = Addon.GetActionState(button.action)
+				
+				local newState
+				if usable then
+					newState = "normal"
+				elseif oom then
+					newState = "oom"
+				else
+					newState = "unusable"
+				end
+			
+				states[icon] = newState
+	
+				local color = Addon.sets[newState]
+				icon:SetVertexColor(color[1], color[2], color[3], color[4])
+				icon:SetDesaturated(color.desaturate)
+			end
+	
+			local hotkey = button.HotKey
+			if states[hotkey] == oldState then
+				states[hotkey] = "normal"
+	
+				local color = Addon.sets["normal"]
+				hotkey:SetVertexColor(color[1], color[2], color[3])
+			end
+		end		
 	end
 end
