@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 11.0.5
+
+* Fix an error caused by the retrieval of a nil value when checking the spell costs of a macro.
+
 ## 11.0.4
 
 * Fixed an issue causing range checking to incorrectly revert actions to displaying as usable, 
