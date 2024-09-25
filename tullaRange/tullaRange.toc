@@ -1,5 +1,4 @@
-## Interface: 110002, 40400
-## Interface-Vanilla: 11503
+## Interface: 110002, 40401, 40400, 11504
 ## Title: tullaRange
 ## Author: Tuller
 ## Notes: Out of range coloring based on RedRange

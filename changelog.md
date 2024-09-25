@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 11.0.6
+
+* Update TOCs for 4.4.1 and 1.15.3
+
 ## 11.0.5
 
 * Fix an error caused by the retrieval of a nil value when checking the spell costs of a macro.
