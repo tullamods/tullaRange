@@ -4,7 +4,7 @@
 
 local AddonName, Addon = ...
 
-Addon.frame = CreateFrame("Frame", nil, SettingsPanel or InterfaceOptionsFrame)
+Addon.frame = CreateFrame("Frame", nil, SettingsPanel)
 Addon.frame.owner = Addon
 
 --------------------------------------------------------------------------------
@@ -14,10 +14,11 @@ Addon.frame.owner = Addon
 -- addon intially loaded
 function Addon:OnLoad()
 	self.frame:SetScript("OnEvent", function(frame, event, ...)
-		local func = frame.owner[event]
+		local owner = frame.owner
+		local func = owner[event]
 
 		if func then
-			func(self, event, ...)
+			func(owner, event, ...)
 		end
 	end)
 
@@ -29,7 +30,6 @@ function Addon:OnLoad()
 
 	-- register any events we need to watch
 	self.frame:RegisterEvent("ADDON_LOADED")
-	self.frame:RegisterEvent("PLAYER_LOGIN")
 	self.frame:RegisterEvent("PLAYER_LOGOUT")
 
 	-- drop this method, as we won't need it again
@@ -45,10 +45,16 @@ function Addon:ADDON_LOADED(event, addonName)
 	self.sets = self:GetOrCreateSettings()
 
 	-- add a launcher for the addons tray
-	_G[addonName .. '_Launch'] = function()
-		if C_AddOns.LoadAddOn(addonName .. '_Config') then
-			Settings.OpenToCategory(addonName)
-		end
+	if AddonCompartmentFrame then
+		AddonCompartmentFrame:RegisterAddon{
+			text = C_AddOns.GetAddOnMetadata(addonName, "Title"),
+			icon = C_AddOns.GetAddOnMetadata(addonName, "IconTexture"),
+			func = function()
+				if C_AddOns.LoadAddOn(addonName .. '_Config') then
+					Settings.OpenToCategory(addonName)
+				end
+			end,
+		}
 	end
 
 	-- enable the addon, this is defined in classic/modern
@@ -65,7 +71,6 @@ end
 
 function Addon:PLAYER_LOGOUT(event)
 	self:TrimSettings()
-
 	self.frame:UnregisterEvent(event)
 	self[event] = nil
 end
@@ -121,7 +126,6 @@ end
 -- removes any entries from the settings database that equate to default settings
 function Addon:TrimSettings()
     local db = _G[DB_KEY]
-
     if db then
         removeDefaults(db, self:GetDefaultSettings())
     end

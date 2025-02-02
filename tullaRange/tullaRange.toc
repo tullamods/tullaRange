@@ -7,7 +7,6 @@
 ## Version: @project-version@
 ## SavedVariables: TULLARANGE_COLORS
 ## IconTexture: Interface/Icons/Inv_misc_punchcards_red
-## AddonCompartmentFunc: tullaRange_Launch
 attackFlash.lua
 actionState.lua
 updater.modern.lua
