@@ -1,7 +1,8 @@
-## Interface: 110105, 40402, 11507
+## Interface: 110107, 50500, 40402, 11507
 ## Title: tullaRange Config
 ## Author: Tuller
 ## Notes: tullaRange's configuration interface
+## Notes-ruRU: Конфигурация tullaRange
 ## Dependencies: tullaRange
 ## LoadOnDemand: 1
 ## IconTexture: Interface/Icons/Inv_misc_punchcards_red
