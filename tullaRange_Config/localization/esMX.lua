@@ -1,4 +1,4 @@
--- tullaRange localized strings - esMX
+-- tullaRange localized strings - esMX (auto translated)
 local AddonName, Addon = ...
 local L = Addon.L
 

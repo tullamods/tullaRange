@@ -1,4 +1,4 @@
-﻿-- tullaRange localized strings - Simplified Chinese by Masini
+﻿-- tullaRange localized strings - zhCN by Masini
 local AddonName, Addon = ...
 local L = Addon.L
 

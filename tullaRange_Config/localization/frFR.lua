@@ -1,4 +1,4 @@
--- tullaRange localized strings - frFR
+-- tullaRange localized strings - frFR (auto translated)
 local AddonName, Addon = ...
 local L = Addon.L
 

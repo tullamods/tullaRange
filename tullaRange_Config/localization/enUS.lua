@@ -1,4 +1,5 @@
 -- enUS
--- this file is left blank, as American English is the default locale. The only
+
+-- this file is left blank, as English is the default locale. The only
 -- reason it is present at all is to prevent loading errors when using the new
 -- [TextLocale] directive

@@ -1,4 +1,4 @@
--- tullaRange localized strings - esES
+-- tullaRange localized strings - esES (auto translated)
 local AddonName, Addon = ...
 local L = Addon.L
 
