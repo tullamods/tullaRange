@@ -1,5 +1,12 @@
 # tullaRange release notes
 
+## 11.2.0
+
+* Update TOCs for 12.0.0 (Midnight), 11.2.7, 5.5.3, and 11.15.8
+* Use conditional directives to only load the classic range updater when on
+  classic and the modern when on modern versions of WoW
+* Use text locale directives to control which localized strings are loaded
+
 ## 11.1.3
 
 * Update TOCs for 11.2.5 and 5.5.1
