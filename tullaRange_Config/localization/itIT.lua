@@ -1,22 +1,13 @@
---[[tullaRange Config Localization - Italian]]
-
-if GetLocale() ~= 'itIT' then return end
-
+-- tullaRange localized strings - itIT
 local AddonName, Addon = ...
 local L = Addon.L
 
-L.ColorSettings = 'Colori'
-
-L.ColorSettingsTitle = 'Impostazioni per la configurazione del colore'
-
-L.oor = 'Bersaglio distante'
-
-L.oom = 'Mana scarso'
-
-L.unusable = 'Non utilizzabile'
-
-L.Red = 'Rosso'
-
-L.Green = 'Verde'
-
 L.Blue = 'Blu'
+L.ColorSettings = 'Colori'
+L.ColorSettingsTitle = 'Impostazioni per la configurazione del colore'
+L.Desaturate = 'Desatura'
+L.Green = 'Verde'
+L.oom = 'Mana scarso'
+L.oor = 'Bersaglio distante'
+L.Red = 'Rosso'
+L.unusable = 'Non utilizzabile'

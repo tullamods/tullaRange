@@ -1,19 +1,13 @@
---[[
-	tullaRange Config Localization - Russian
---]]
-
-if GetLocale() ~= 'ruRU' then return end
-
-local _, Addon = ...
-
+-- tullaRange localized strings - ruRU
+local AddonName, Addon = ...
 local L = Addon.L
 
+L.Blue = 'Синий'
 L.ColorSettings = 'Цвета'
 L.ColorSettingsTitle = 'Настройки цветовой конфигурации tullaRange'
-L.oor = 'Вне диапазона'
-L.oom = 'Нет маны'
-L.unusable = 'Неиспользуемый'
-L.Red = 'Красный'
-L.Green = 'Зелёный'
-L.Blue = 'Синий'
 L.Desaturate = 'Обесцвеченный'
+L.Green = 'Зелёный'
+L.oom = 'Нет маны'
+L.oor = 'Вне диапазона'
+L.Red = 'Красный'
+L.unusable = 'Неиспользуемый'

@@ -1,4 +1,4 @@
-## Interface: 110205, 110200, 50501, 50500, 11507
+## Interface: 120000, 110207, 110205, 50503, 50502, 11508
 ## Title: tullaRange Config
 ## Author: Tuller
 ## Notes: tullaRange's configuration interface
@@ -6,5 +6,6 @@
 ## Dependencies: tullaRange
 ## LoadOnDemand: 1
 ## IconTexture: Interface/Icons/Inv_misc_punchcards_red
-localization\localization.xml
+localization\_default.lua
+localization\[TextLocale].lua
 ui.lua

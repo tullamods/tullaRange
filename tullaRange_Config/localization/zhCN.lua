@@ -1,22 +1,13 @@
-﻿--[[tullaRange Config Localization - Simplified Chinese by Masini]]
-
-if GetLocale() ~= 'zhCN' then return end
-
+﻿-- tullaRange localized strings - Simplified Chinese by Masini
 local AddonName, Addon = ...
 local L = Addon.L
 
-L.ColorSettings = '颜色'
-
-L.ColorSettingsTitle = 'tullaRange颜色设置设定'
-
-L.oor = '超出距离'
-
-L.oom = '魔力不足'
-
-L.unusable = '不稳定'
-
-L.Red = '红'
-
-L.Green = '绿'
-
 L.Blue = '蓝'
+L.ColorSettings = '颜色'
+L.ColorSettingsTitle = ('%s颜色设置设定'):format(AddonName)
+L.Desaturate = '降低饱和度'
+L.Green = '绿'
+L.oom = '魔力不足'
+L.oor = '超出距离'
+L.Red = '红'
+L.unusable = '不稳定'
