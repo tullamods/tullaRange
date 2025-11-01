@@ -43,7 +43,7 @@ EventUtil.ContinueOnAddOnLoaded(AddonName, GenerateClosure(function(self, addonN
     end
 
     -- unload settings when we're done
-    EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_LOGOUT", self.TrimSettings, self)
+    EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_LOGOUT", function () self:TrimSettings() end)
 end, Addon))
 
 --------------------------------------------------------------------------------
