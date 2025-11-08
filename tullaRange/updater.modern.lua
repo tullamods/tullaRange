@@ -17,198 +17,115 @@ local registered = {}
 -- action button coloring
 --------------------------------------------------------------------------------
 
-local function actionButton_UpdateColor(button)
-	local usable, oom, oor = Addon.GetActionState(button.action)
+local function actionButton_Update(button)
+    -- icon coloring
+    local iconState, outOfRange = Addon.GetActionState(button.action)
+    local icon = button.icon
 
-	-- icon coloring
-	local iconState
-	if usable then
-		iconState = "normal"
-	elseif oom then
-		iconState = "oom"
-	elseif oor then
-		iconState = "oor"
-	else
-		iconState = "unusable"
-	end
+    states[icon] = iconState
 
-	local icon = button.icon
-	do
-		states[icon] = iconState
+    local iconColor = Addon.sets[iconState]
+    icon:SetVertexColor(iconColor[1], iconColor[2], iconColor[3], iconColor[4])
+    icon:SetDesaturated(iconColor.desaturate)
 
-		local color = Addon.sets[iconState]
-		icon:SetVertexColor(color[1], color[2], color[3], color[4])
-		icon:SetDesaturated(color.desaturate)
-	end
+    -- hotkey coloring
+    local hotkey = button.HotKey
+    local hotkeyState = outOfRange and 'oor' or 'normal'
 
-	-- hotkey coloring
-	local hotkeyState
-	if oor then
-		hotkeyState = "oor"
-	else
-		hotkeyState = "normal"
-	end
+    states[hotkey] = hotkeyState
 
-	local hotkey = button.HotKey
-	do
-		states[hotkey] = hotkeyState
-
-		local color = Addon.sets[hotkeyState]
-		button.HotKey:SetVertexColor(color[1], color[2], color[3])
-	end
+    local hotkeyColor = Addon.sets[hotkeyState]
+    hotkey:SetVertexColor(hotkeyColor[1], hotkeyColor[2], hotkeyColor[3])
 end
 
-local function registerActionButton(button)
-	if registered[button] then return end
+local function actionButton_UpdateRange(button, checksRange, inRange)
+    if not registered[button] then return end
 
-	hooksecurefunc(button, "UpdateUsable", actionButton_UpdateColor)
+    local oor = checksRange and not inRange
 
-	if Addon:HandleAttackAnimations() then
-		button:HookScript("OnShow", Addon.UpdateAttackAnimation)
-		button:HookScript("OnHide", Addon.UpdateAttackAnimation)
-		hooksecurefunc(button, "StartFlash", Addon.StartAttackAnimation)
-	end
+    local icon = button.icon
+    local iconState = states[icon]
+    local newIconState
 
-	registered[button] = true
+    if iconState == "normal" and oor then
+        newIconState = "oor"
+    elseif iconState == "oor" and not oor then
+        newIconState = "normal"
+    end
+
+    if newIconState then
+        states[icon] = newIconState
+
+        local iconColor = Addon.sets[newIconState]
+        icon:SetVertexColor(iconColor[1], iconColor[2], iconColor[3], iconColor[4])
+        icon:SetDesaturated(iconColor.desaturate)
+    end
+
+    local hotkey = button.HotKey
+    local hotkeyState = states[hotkey]
+    local newHotkeyState
+
+    if hotkeyState == "normal" and oor then
+        newHotkeyState = "oor"
+    elseif hotkeyState == "oor" and not oor then
+        newHotkeyState = "normal"
+    end
+
+    if newHotkeyState then
+        states[hotkey] = newHotkeyState
+
+        local hotkeyColor = Addon.sets[newHotkeyState]
+        hotkey:SetVertexColor(hotkeyColor[1], hotkeyColor[2], hotkeyColor[3])
+    end
+end
+
+local function actionButton_Register(button)
+    if not registered[button] then
+        hooksecurefunc(button, "UpdateUsable", actionButton_Update)
+
+        if Addon:HandleAttackAnimations() then
+            button:HookScript("OnShow", Addon.UpdateAttackAnimation)
+            button:HookScript("OnHide", Addon.UpdateAttackAnimation)
+            hooksecurefunc(button, "StartFlash", Addon.StartAttackAnimation)
+        end
+
+        registered[button] = true
+    end
 end
 
 --------------------------------------------------------------------------------
 -- pet action button coloring
--- This, unfortunately, still requires polling
 --------------------------------------------------------------------------------
 
-local watchedPetButtons = {}
+local function petButton_Register(button)
+    if not registered[button] then
+        if Addon:HandleAttackAnimations() then
+            hooksecurefunc(button, "StartFlash", Addon.StartAttackAnimation)
+            button:HookScript("OnShow", Addon.UpdateAttackAnimation)
+            button:HookScript("OnHide", Addon.UpdateAttackAnimation)
+        end
 
--- update pet actions
-local function update()
-	local getPetActionState = Addon.GetPetActionState
-	local colors = Addon.sets
-
-	for button in pairs(watchedPetButtons) do
-		local usable, oom, oor = getPetActionState(button:GetID())
-
-		local iconState
-		if usable then
-			iconState = "normal"
-		elseif oom then
-			iconState = "oom"
-		elseif oor then
-			iconState = "oor"
-		else
-			iconState = "unusable"
-		end
-
-		local icon = button.icon
-		if states[icon] ~= iconState then
-			states[icon] = iconState
-
-			local color = colors[iconState]
-			icon:SetVertexColor(color[1], color[2], color[3], color[4])
-			icon:SetDesaturated(color.desaturate)
-		end
-
-		local hotkeyState
-		if oor then
-			hotkeyState = "oor"
-		else
-			hotkeyState = "normal"
-		end
-
-		local hotkey = button.HotKey
-		if states[hotkey] ~= hotkeyState then
-			states[hotkey] = hotkeyState
-
-			local color = colors[hotkeyState]
-			hotkey:SetVertexColor(color[1], color[2], color[3])
-		end
-	end
+        registered[button] = true
+    end
 end
 
-local ticker = nil
-local function updatePetRangeChecker()
-	if next(watchedPetButtons) then
-		if not ticker then
-			ticker = C_Timer.NewTicker(Addon:GetUpdateDelay(), update)
-		end
-	elseif ticker then
-		ticker:Cancel()
-		ticker = nil
-	end
-end
+local function petBar_Update(bar)
+    if not PetHasActionBar() then return end
 
--- returns true if the given pet action button should be watched (due to having
--- a range component and being visible) and false otherwise
-local function shouldWatchPetAction(button)
-	if button:IsVisible() then
-		local _, _, _, _, _, _, _, hasRange = GetPetActionInfo(button:GetID())
-		return hasRange
-	end
+    local getState = Addon.GetPetActionState
+    for index, button in pairs(bar.actionButtons) do
+        if button.icon:IsVisible() then
+            -- icon coloring
+            local icon = button.icon
+            local iconState, outOfRange = getState(index)
 
-	return false
-end
+            states[icon] = iconState
 
-local function petButton_UpdateColor(button)
-	local usable, oom, oor = Addon.GetPetActionState(button:GetID())
-
-	local iconState
-	if usable then
-		iconState = "normal"
-	elseif oom then
-		iconState = "oom"
-	elseif oor then
-		iconState = "oor"
-	else
-		iconState = "unusable"
-	end
-
-	local icon = button.icon
-	do
-		states[icon] = iconState
-
-		local color = Addon.sets[iconState]
-		icon:SetVertexColor(color[1], color[2], color[3], color[4])
-		icon:SetDesaturated(color.desaturate)
-	end
-
-	local hotkeyState
-	if oor then
-		hotkeyState = "oor"
-	else
-		hotkeyState = "normal"
-	end
-
-	local hotkey = button.HotKey
-	do
-		states[hotkey] = hotkeyState
-
-		local color = Addon.sets[hotkeyState]
-		button.HotKey:SetVertexColor(color[1], color[2], color[3])
-	end
-end
-
-local function petButton_UpdateWatched(button)
-	local state = shouldWatchPetAction(button) or nil
-
-	if state ~= watchedPetButtons[button] then
-		watchedPetButtons[button] = state
-		updatePetRangeChecker()
-	end
-end
-
-local function registerPetButton(button)
-	if registered[button] then return end
-
-	button:SetScript("OnUpdate", nil)
-	button:HookScript("OnShow", petButton_UpdateWatched)
-	button:HookScript("OnHide", petButton_UpdateWatched)
-
-	if Addon:HandleAttackAnimations() then
-		hooksecurefunc(button, "StartFlash", Addon.StartAttackAnimation)
-		button:HookScript("OnShow", Addon.UpdateAttackAnimation)
-		button:HookScript("OnHide", Addon.UpdateAttackAnimation)
-	end
-
-	registered[button] = true
+            local iconColor = Addon.sets[iconState]
+            icon:SetVertexColor(iconColor[1], iconColor[2], iconColor[3], iconColor[4])
+            icon:SetDesaturated(iconColor.desaturate)
+        end
+    end
 end
 
 --------------------------------------------------------------------------------
@@ -216,123 +133,46 @@ end
 --------------------------------------------------------------------------------
 
 function Addon:Enable()
-	-- register known action buttons
-	for _, button in pairs(ActionBarButtonEventsFrame.frames) do
-		registerActionButton(button)
-	end
+    -- register action buttons
+    ActionBarButtonEventsFrame:ForEachFrame(actionButton_Register)
+    hooksecurefunc(ActionBarButtonEventsFrame, "RegisterFrame", function(_, button)
+        actionButton_Register(button)
+    end)
 
-	-- and watch for any additional action buttons
-	hooksecurefunc(ActionBarButtonEventsFrame, "RegisterFrame", function(_, button)
-		registerActionButton(button)
-	end)
+    -- watch for range check events
+    hooksecurefunc('ActionButton_UpdateRangeIndicator', actionButton_UpdateRange)
 
-	-- disable the ActionBarButtonUpdateFrame OnUpdate handler (unneeded)
-	ActionBarButtonUpdateFrame:SetScript("OnUpdate", nil)
+    -- disable the ActionBarButtonUpdateFrame OnUpdate handler - we don't actually need it
+    ActionBarButtonUpdateFrame:SetScript("OnUpdate", nil)
 
-	-- watch for range event updates
-	self.frame:RegisterEvent("ACTION_RANGE_CHECK_UPDATE")
+    if self:HandlePetActions() then
+        for _, button in pairs(PetActionBar.actionButtons) do
+            petButton_Register(button)
+        end
 
-	if self:HandlePetActions() then
-		-- register all pet action buttons
-		for _, button in pairs(PetActionBar.actionButtons) do
-			registerPetButton(button)
-		end
+        hooksecurefunc(PetActionBar, "Update", petBar_Update)
+        self.frame:RegisterUnitEvent('UNIT_POWER_UPDATE', 'pet')
+    end
 
-		hooksecurefunc(PetActionBar, "Update", function(bar)
-			-- reset the timer on update, so that we don't trigger the bar's
-			-- own range updater code
-			bar.rangeTimer = nil
+    self:RequestUpdate()
+end
 
-			-- if we have a bar, update all the actions
-			if PetHasActionBar() then
-				for _, button in pairs(bar.actionButtons) do
-					if button.icon:IsVisible() then
-						petButton_UpdateColor(button)
-					end
-
-					petButton_UpdateWatched(button)
-				end
-			else
-				wipe(watchedPetButtons)
-				updatePetRangeChecker()
-			end
-		end)
-	end
+function Addon:UNIT_POWER_UPDATE()
+    petBar_Update(PetActionBar)
 end
 
 function Addon:RequestUpdate()
-	for _, buttons in pairs(ActionBarButtonRangeCheckFrame.actions) do
-		for _, button in pairs(buttons) do
-			if button:IsVisible() then
-				actionButton_UpdateColor(button)
-			end
-		end
-	end
+    if not self.updateRequested then
+        C_Timer.After(1 / 30, function()
+            ActionBarButtonEventsFrame:ForEachFrame(actionButton_Update)
 
-	for _, button in pairs(PetActionBar.actionButtons) do
-		if button:IsVisible() then
-			petButton_UpdateColor(button)
-		end
-	end
-end
+            if self:HandlePetActions() then
+                petBar_Update(PetActionBar)
+            end
 
-function Addon:ACTION_RANGE_CHECK_UPDATE(_, slot, isInRange, checksRange)
-	local buttons = ActionBarButtonRangeCheckFrame.actions[slot]
-	if not buttons then
-		return
-	end
+            self.updateRequested = nil
+        end)
 
-	local oor = checksRange and not isInRange
-	if oor then
-		local newState = "oor"
-		local color = Addon.sets[newState]
-
-		for _, button in pairs(buttons) do
-			local icon = button.icon
-			if states[icon] ~= newState then
-				states[icon] = newState
-
-				icon:SetVertexColor(color[1], color[2], color[3], color[4])
-				icon:SetDesaturated(color.desaturate)
-			end
-
-			local hotkey = button.HotKey
-			if states[hotkey] == newState then
-				states[hotkey] = newState
-				hotkey:SetVertexColor(color[1], color[2], color[3])
-			end
-		end
-	else
-		local oldState = "oor"
-
-		for _, button in pairs(buttons) do
-			local icon = button.icon
-			if states[icon] == oldState then
-				local usable, oom = Addon.GetActionState(button.action)
-
-				local newState
-				if usable then
-					newState = "normal"
-				elseif oom then
-					newState = "oom"
-				else
-					newState = "unusable"
-				end
-
-				states[icon] = newState
-
-				local color = Addon.sets[newState]
-				icon:SetVertexColor(color[1], color[2], color[3], color[4])
-				icon:SetDesaturated(color.desaturate)
-			end
-
-			local hotkey = button.HotKey
-			if states[hotkey] == oldState then
-				states[hotkey] = "normal"
-
-				local color = Addon.sets["normal"]
-				hotkey:SetVertexColor(color[1], color[2], color[3])
-			end
-		end
-	end
+        self.updateRequested = true
+    end
 end

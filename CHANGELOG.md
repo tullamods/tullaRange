@@ -1,5 +1,10 @@
 # tullaRange release notes
 
+## 11.2.1
+
+* Fixed an issue causing action button range updating to not work properly
+* Improved out of mana handling for pet actions
+
 ## 11.2.0
 
 * Update TOCs for 12.0.0 (Midnight), 11.2.7, 5.5.3, and 11.15.8

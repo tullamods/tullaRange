@@ -11,7 +11,7 @@ Addon.Name = AddonName
 --------------------------------------------------------------------------------
 
 EventUtil.ContinueOnAddOnLoaded(AddonName, GenerateClosure(function(self, addonName)
-    -- load the settings ui when the settings panel is first shown
+    -- add a handler for loading the settings panel
     self.frame = CreateFrame("Frame", nil, SettingsPanel)
     self.frame.owner = self
 
@@ -20,11 +20,22 @@ EventUtil.ContinueOnAddOnLoaded(AddonName, GenerateClosure(function(self, addonN
         frame:SetScript("OnShow", nil)
     end)
 
+    -- provide a way for the updaters to register events
+    self.frame:SetScript('OnEvent', function(_, event, ...)
+        self[event](self, event, ...)
+    end)
+
+    -- initialize the db
     self.sets = self:GetOrCreateSettings()
+
+    -- cleanup the db upon logout
+    EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_LOGOUT", function()
+        self:TrimSettings()
+    end)
 
     -- add a launcher for the addons tray
     if AddonCompartmentFrame then
-        AddonCompartmentFrame:RegisterAddon{
+        AddonCompartmentFrame:RegisterAddon {
             text = C_AddOns.GetAddOnMetadata(addonName, "Title"),
             icon = C_AddOns.GetAddOnMetadata(addonName, "IconTexture"),
             func = function()
@@ -38,12 +49,10 @@ EventUtil.ContinueOnAddOnLoaded(AddonName, GenerateClosure(function(self, addonN
     -- enable the addon, this is defined in classic/modern
     if type(self.Enable) == "function" then
         self:Enable()
+        self.Enable = nil
     else
         print(addonName, " - Unable to enable for World of Warcraft version", (GetBuildInfo()))
     end
-
-    -- unload settings when we're done
-    EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_LOGOUT", function () self:TrimSettings() end)
 end, Addon))
 
 --------------------------------------------------------------------------------
