@@ -4,6 +4,8 @@
 
 * Fixed an issue causing action button range updating to not work properly
 * Improved out of mana handling for pet actions
+* Fixed a long standing issue where the unusuable state had a lower precedence
+  than out of range
 
 ## 11.2.0
 
