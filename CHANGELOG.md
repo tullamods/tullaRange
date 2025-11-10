@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 11.2.2
+
+* Simplified oom detection for spells
+
 ## 11.2.1
 
 * Fixed an issue causing action button range updating to not work properly
