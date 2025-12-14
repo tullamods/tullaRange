@@ -113,7 +113,7 @@ local function createColorSelector(state, parent)
     local previewButtonIcon = previewButton:CreateTexture(nil, 'ARTWORK')
     previewButtonIcon:SetAllPoints()
     previewButtonIcon:SetTexture(getRandomSpellIcon())
-    previewButtonIcon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+    previewButtonIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     previewButton.Icon = previewButtonIcon
 
     -- add desaturate toggle
