@@ -1,5 +1,10 @@
 # tullaRange release notes
 
+## 11.2.3
+
+* Added support for Burning Crusade Classic Anniversary Edition
+* Updated TOCs for Midnight Beta and latest game versions.
+
 ## 11.2.2
 
 * Simplified oom detection for spells
