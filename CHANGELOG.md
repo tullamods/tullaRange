@@ -1,5 +1,10 @@
 # tullaRange release notes
 
+## 12.0.0
+
+* Fixed an error when trying to open the settings menu via the addon compartment button
+* Added a `/tullarange` command to show the options menu
+
 ## 11.2.3
 
 * Added support for Burning Crusade Classic Anniversary Edition

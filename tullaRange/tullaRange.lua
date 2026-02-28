@@ -34,17 +34,22 @@ EventUtil.ContinueOnAddOnLoaded(AddonName, GenerateClosure(function(self, addonN
     end)
 
     -- add a launcher for the addons tray
+    local function showOptions()
+        if C_AddOns.LoadAddOn(addonName .. '_Config') then
+            self:OpenOptionsMenu()
+        end
+    end
+
     if AddonCompartmentFrame then
         AddonCompartmentFrame:RegisterAddon {
             text = C_AddOns.GetAddOnMetadata(addonName, "Title"),
             icon = C_AddOns.GetAddOnMetadata(addonName, "IconTexture"),
-            func = function()
-                if C_AddOns.LoadAddOn(addonName .. '_Config') then
-                    Settings.OpenToCategory(addonName)
-                end
-            end,
+            func = showOptions,
         }
     end
+
+    SlashCmdList[addonName] = showOptions
+    _G['SLASH_' .. addonName .. '1'] = '/' .. addonName:lower()
 
     -- enable the addon, this is defined in classic/modern
     if type(self.Enable) == "function" then
