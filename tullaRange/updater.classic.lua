@@ -22,6 +22,10 @@ local watchedPetButtons = {}
 -- current states for each button
 local states = {}
 
+local function shouldHandleActionButton(button)
+    return not Addon.IsSingleButtonAssistantButton(button) and not Addon.IsSingleButtonAssistantAction(button.action)
+end
+
 --------------------------------------------------------------------------------
 -- core update loop
 --------------------------------------------------------------------------------
@@ -30,12 +34,20 @@ local function update()
     -- update actions
     local getActionState = Addon.GetActionState
     for button in pairs(watchedActionButtons) do
+        if not shouldHandleActionButton(button) then
+            watchedActionButtons[button] = nil
+            goto continue
+        end
+
         local icon = button.icon
         local iconState, outOfRange = getActionState(button.action)
         if states[icon] ~= iconState then
             states[icon] = iconState
-
-            local iconColor = Addon.sets[iconState]
+        end
+        local iconColor = Addon.sets[iconState]
+        -- Only update if color or desaturation is different
+        local r, g, b, a = icon:GetVertexColor()
+        if r ~= iconColor[1] or g ~= iconColor[2] or b ~= iconColor[3] or (a or 1) ~= iconColor[4] or icon:IsDesaturated() ~= iconColor.desaturate then
             icon:SetVertexColor(iconColor[1], iconColor[2], iconColor[3], iconColor[4])
             icon:SetDesaturated(iconColor.desaturate)
         end
@@ -44,10 +56,16 @@ local function update()
         local hotkeyState = outOfRange and 'oor' or 'normal'
         if states[hotkey] ~= hotkeyState then
             states[hotkey] = hotkeyState
-
-            local hotkeyColor = Addon.sets[hotkeyState]
-            hotkey:SetVertexColor(hotkeyColor[1], hotkeyColor[2], hotkeyColor[3])
         end
+        local hotkeyColor = Addon.sets[hotkeyState]
+        if hotkey then
+            local hr, hg, hb = hotkey:GetVertexColor()
+            if hr ~= hotkeyColor[1] or hg ~= hotkeyColor[2] or hb ~= hotkeyColor[3] then
+                hotkey:SetVertexColor(hotkeyColor[1], hotkeyColor[2], hotkeyColor[3])
+            end
+        end
+
+        ::continue::
     end
 
     -- update pet actions
@@ -93,7 +111,7 @@ end
 -- returns true if the given action button should be watched (due to having a
 -- range component and being visible) and false otherwise
 local function shouldWatchAction(button)
-    return button:IsVisible() and ActionHasRange(button.action or 0)
+    return shouldHandleActionButton(button) and button:IsVisible() and ActionHasRange(button.action or 0)
 end
 
 local function actionButton_UpdateWatched(button)
@@ -109,6 +127,10 @@ local function actionButton_UpdateWatched(button)
 end
 
 local function actionButton_UpdateColor(button)
+    if not shouldHandleActionButton(button) then
+        return
+    end
+
     -- icon coloring
     local icon = button.icon
     local iconState, outOfRange = Addon.GetActionState(button.action)
@@ -130,6 +152,10 @@ local function actionButton_UpdateColor(button)
 end
 
 local function registerActionButton(button)
+    if not shouldHandleActionButton(button) then
+        return
+    end
+
     if actionButtons[button] then return end
 
     button:SetScript("OnUpdate", nil)
