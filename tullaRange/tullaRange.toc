@@ -1,4 +1,4 @@
-## Interface: 120001, 50503, 20505, 11508
+## Interface: 120005, 50504, 20505, 11508
 ## Title: tullaRange
 ## Author: Tuller
 ## Category: Action Bars
@@ -9,6 +9,6 @@
 ## IconTexture: Interface/Icons/Inv_misc_punchcards_red
 attackFlash.lua
 actionState.lua
-updater.modern.lua [AllowLoadGameType mainline, tbc]
-updater.classic.lua [AllowLoadGameType mists, cata, wrath, vanilla]
+updater.modern.lua [AllowLoadGameType mainline, tbc, mists]
+updater.classic.lua [AllowLoadGameType cata, wrath, vanilla]
 tullaRange.lua
