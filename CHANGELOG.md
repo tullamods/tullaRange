@@ -1,5 +1,10 @@
 # tullaRange release notes
 
+## 12.1.0
+
+* Updated TOCs for 12.0.7, 12.0.5, and 5.5.4
+* Mists now uses the event driven updater (like Retail and Burning Crusade Classic)
+
 ## 12.0.0
 
 * Fixed an error when trying to open the settings menu via the addon compartment button
