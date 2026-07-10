@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 12.1.1
+
+* Update TOCs for 12.1.0 and 2.5.6
+
 ## 12.1.0
 
 * Updated TOCs for 12.0.7, 12.0.5, and 5.5.4
