@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 12.1.2
+
+* Add support for 1.15.9 (Vanilla)
+
 ## 12.1.1
 
 * Update TOCs for 12.1.0 and 2.5.6
