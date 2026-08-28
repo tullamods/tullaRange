@@ -13,11 +13,19 @@ local _, Addon = ...
 local states = {}
 local registered = {}
 
+local function shouldHandleActionButton(button)
+    return not Addon.IsSingleButtonAssistantButton(button) and not Addon.IsSingleButtonAssistantAction(button.action)
+end
+
 --------------------------------------------------------------------------------
 -- action button coloring
 --------------------------------------------------------------------------------
 
 local function actionButton_Update(button)
+    if not shouldHandleActionButton(button) then
+        return
+    end
+
     -- icon coloring
     local iconState, outOfRange = Addon.GetActionState(button.action)
     local icon = button.icon
@@ -39,7 +47,7 @@ local function actionButton_Update(button)
 end
 
 local function actionButton_UpdateRange(button, checksRange, inRange)
-    if not registered[button] then return end
+    if not registered[button] or not shouldHandleActionButton(button) then return end
 
     local oor = checksRange and not inRange
 
@@ -80,6 +88,10 @@ local function actionButton_UpdateRange(button, checksRange, inRange)
 end
 
 local function actionButton_Register(button)
+    if not shouldHandleActionButton(button) then
+        return
+    end
+
     if not registered[button] then
         hooksecurefunc(button, "UpdateUsable", actionButton_Update)
 

@@ -3,6 +3,35 @@
 --------------------------------------------------------------------------------
 
 local _, Addon = ...
+local SINGLE_BUTTON_ASSISTANT_SPELL_ID = 1229376
+local SINGLE_BUTTON_ASSISTANT_NAME = C_Spell.GetSpellName(SINGLE_BUTTON_ASSISTANT_SPELL_ID)
+
+function Addon.IsSingleButtonAssistantAction(slot)
+    local actionType, id = GetActionInfo(slot)
+
+    if actionType == "spell" then
+        return id == SINGLE_BUTTON_ASSISTANT_SPELL_ID
+    end
+
+    if actionType == "macro" and id then
+        local macroSpell = GetMacroSpell(id)
+        return macroSpell == SINGLE_BUTTON_ASSISTANT_SPELL_ID or macroSpell == SINGLE_BUTTON_ASSISTANT_NAME
+    end
+
+    return false
+end
+
+function Addon.IsSingleButtonAssistantButton(button)
+    if not button then
+        return false
+    end
+
+    if type(button.UpdateAssistedCombatRotationFrame) == "function" then
+        return true
+    end
+
+    return button.ActiveFrame ~= nil or button.InactiveTexture ~= nil
+end
 
 function Addon.GetActionState(slot)
     local actionType, id = GetActionInfo(slot)
