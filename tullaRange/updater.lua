@@ -6,8 +6,6 @@
 -- for a constant loop to determine if abilities are in range or not
 --------------------------------------------------------------------------------
 
-if not ActionBarButtonRangeCheckFrame then return end
-
 local _, Addon = ...
 
 local states = {}
