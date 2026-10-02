@@ -1,5 +1,9 @@
 # tullaRange release notes
 
+## 12.2.1
+
+* Update TOCs for 1.60.1 (Forever-ever)
+
 ## 12.2.0
 
 * Update TOCs for 12.1.5 and 1.16.0 (Forever)
